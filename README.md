@@ -115,21 +115,22 @@ web端测试
 
 - [x] 同步线程注册/登录校验
 	* 关闭http_conn.cpp中CGI,打开同步线程
+	    
 	    ```C++
 	    380 //同步线程登录校验
-	    381 //#if 0
-	    423 //#endif
+	    381 #if 0
+	    423 #endif
 
 	    425 //CGI多进程登录校验
-	    426 #if 0
-	    495 #endif
+	    426 //#if 0
+	    495 //#endif
 	    ```
 
-	* 生成server
+* 生成server
 
-	    ```C++
-	    make server
-	    ```
+    ```C++
+    make server
+    ```
 
 * 启动server
 
