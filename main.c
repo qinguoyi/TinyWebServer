@@ -122,7 +122,7 @@ int main(int argc,char *argv[])
     int user_count=0;
 
     //初始化数据库读取表
-    users->initmysql_result();
+    //users->initmysql_result();
 
     //创建套接字，返回listenfd
     int listenfd=socket(PF_INET,SOCK_STREAM,0);
