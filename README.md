@@ -14,6 +14,15 @@ Linux下的简易web服务器，实现web端用户注册，登录功能,经压�
 > * [CGI及同步线程注册和登录校验](https://github.com/twomonkeyclub/TinyWebServer/tree/master/CGImysql) 
 > * [简易服务器压力测试](https://github.com/twomonkeyclub/TinyWebServer/tree/master/test_presure)
 
+Demo
+----------
+> * 注册演示
+
+<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/register.gif" height="338"/> </div>
+
+> * 登录演示
+
+<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/login.gif" height="338"/> </div>
 
 测试结果
 -------------
@@ -82,7 +91,7 @@ web端测试
     ```C++
     const char* doc_root="/home/qgy/github/ini_tinywebserver/root";
     ```
-* 选择任一校验方式
+* 选择任一校验方式，代码中使用同步校验。当使用CGI时才进行如下修改，否则可跳过本步骤，直接生成server
 
 - [ ] CGI多进程注册/登录校验
 	* 打开http_conn.cpp中CGI,关闭同步线程
@@ -135,7 +144,7 @@ web端测试
 * 启动server
 
     ```C++
-    ./server port
+    server port
     ```
 
 * 浏览器端
