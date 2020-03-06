@@ -18,11 +18,11 @@ Demo
 ----------
 > * 注册演示
 
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/register.gif" height="338"/> </div>
+<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/registernew.gif" height="429"/> </div>
 
 > * 登录演示
 
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/login.gif" height="338"/> </div>
+<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/loginnew.gif" height="429"/> </div>
 
 测试结果
 -------------
