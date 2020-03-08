@@ -33,7 +33,7 @@ Webbench对服务器进行压力测试，可以实现上万的并发连接.
 > * 每秒钟传输数据量：1031990 bytes/sec
 > * 所有访问均成功
 
-<div align=center><img src="https://github.com/twomonkeyclub/TinyWebServer/blob/master/root/testresult.png" height="201"/> </div>
+<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/testresult.png" height="201"/> </div>
 
 框架
 -------------
@@ -159,4 +159,4 @@ web端测试
 > * **带你丰富互联网相关项目经验，轻松应对校招！！！**
 > * **项目模块详细讲解，在公众号内持续更新！！！**
 
-<div align=center><img src="https://github.com/twomonkeyclub/TinyWebServer/blob/master/root/test1.jpg" height="350"/> </div>
+<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/test1.jpg" height="350"/> </div>
