@@ -105,7 +105,7 @@ void http_conn::close_conn(bool real_close)
     }
 }
 
-//初始化连接，私有成员，只能自己调用
+//初始化连接,外部调用初始化套接字地址
 void http_conn::init(int sockfd,const sockaddr_in& addr)
 {
     m_sockfd=sockfd;
