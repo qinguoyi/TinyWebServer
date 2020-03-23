@@ -24,22 +24,20 @@ connection_pool::connection_pool(string url,string User,string PassWord,string D
 	pthread_mutex_lock(&lock);
 	for(int i = 0; i < MaxConn; i++)
 	{
-		MYSQL *con=NULL;
-		con=mysql_init(con);
+		MYSQL con;//原代码使用指针 会连接不上
 		
-    		if(con == NULL)
+    		if(!mysql_init(&con))
 		{
-			cout<<"Error:"<<mysql_error(con);
+			cout<<"mysql Error:"<<mysql_error(&con);
 			exit(1);
 		}
-		con = mysql_real_connect(con,url.c_str(),User.c_str(),PassWord.c_str(),DBName.c_str(),Port,NULL,0);
 
-		if(con == NULL)
+		if(!mysql_real_connect(&con,url.c_str(),User.c_str(),PassWord.c_str(),DBName.c_str(),Port,NULL,0))
 		{
-			cout<<"Error: "<<mysql_error(con);
+			cout<<"mysql connnect Error: "<<mysql_error(&con);
 			exit(1);
 		}
-		connList.push_back(con);
+		connList.push_back(&con);
 		++FreeConn;
 	}
 
