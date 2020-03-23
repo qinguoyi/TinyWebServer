@@ -66,15 +66,15 @@ web端测试
     //建立yourdb库
     create database yourdb set utf8;
 
-    //创建users表
+    //创建user表
     USE yourdb;
-    CREATE TABLE users(
+    CREATE TABLE user(
         username char(50) NULL,
         passwd char(50) NULL
     )ENGINE=InnoDB;
 
     //添加数据
-    INSERT INTO users(username, passwd) VALUES('name', 'passwd');
+    INSERT INTO user(username, passwd) VALUES('name', 'passwd');
     ```
 * 修改main.c中的数据库初始化信息
 
