@@ -77,7 +77,7 @@ MYSQL* connection_pool::GetConnection()
 		pthread_mutex_unlock(&lock);
 		return con;
 	}
-
+	pthread_mutex_unlock(&lock);
 	return NULL;
 }
 
@@ -95,7 +95,7 @@ bool connection_pool::ReleaseConnection(MYSQL * con)
 		//reserve.post();
 		return true;
 	}
-	
+	pthread_mutex_unlock(&lock);
 	return false;
 }
 
@@ -114,7 +114,9 @@ void connection_pool::DestroyPool()
 		CurConn = 0;
 		FreeConn = 0;
 		connList.clear();
+		pthread_mutex_unlock(&lock);
 	}
+	pthread_mutex_unlock(&lock);
 }
 
 //当前空闲的连接数
