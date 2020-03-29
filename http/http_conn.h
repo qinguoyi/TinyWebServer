@@ -18,6 +18,7 @@
 #include<stdarg.h>
 #include<errno.h>
 #include<sys/wait.h>
+#include<sys/uio.h>
 #include"../lock/locker.h"
 #include "../CGImysql/sql_connection_pool.h"
 class http_conn{
