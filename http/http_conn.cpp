@@ -229,6 +229,13 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
         m_url+=7;
         m_url=strchr(m_url,'/');
     }
+	
+    if(strncasecmp(m_url,"https://",8)==0)
+    {
+        m_url+=8;
+        m_url=strchr(m_url,'/');
+    }
+
     if(!m_url||m_url[0]!='/')
         return BAD_REQUEST;
     //当url为/时，显示判断界面
