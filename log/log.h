@@ -14,7 +14,9 @@ class Log
     public:  
         static Log* get_instance()  
         {  
+	    pthread_mutex_lock(m_mutex); 
             static Log instance;  
+	    pthread_mutex_unlock(m_mutex);
             return &instance;  
         }  
           
