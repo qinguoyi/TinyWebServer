@@ -567,7 +567,7 @@ bool http_conn::write()
         }
         bytes_to_send-=temp;
         bytes_have_send+=temp;
-        if(bytes_to_send<=bytes_have_send)
+        if(bytes_to_send<=0)
         {
             unmap();
             if(m_linger)
