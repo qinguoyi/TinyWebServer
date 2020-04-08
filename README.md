@@ -148,7 +148,7 @@ web端测试
 * 启动server
 
     ```C++
-    server port
+    ./server port
     ```
 
 * 浏览器端
