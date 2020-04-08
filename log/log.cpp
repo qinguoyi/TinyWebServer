@@ -10,7 +10,6 @@ using namespace std;
 Log::Log()  
 {  
     m_count = 0;  
-    m_mutex = new pthread_mutex_t;  
     m_is_async = false;  
     pthread_mutex_init(m_mutex, NULL);  
 }  
