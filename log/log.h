@@ -9,14 +9,15 @@
 #include "block_queue.h"  
 using namespace std;  
   
+static pthread_mutex_t *m_mutex = new pthread_mutex_t;	//互斥锁 
 class Log  
 {  
     public:  
         static Log* get_instance()  
         {  
-	    //pthread_mutex_lock(m_mutex); 
+	        pthread_mutex_lock(m_mutex); 
             static Log instance;  
-	    //pthread_mutex_unlock(m_mutex);
+	        pthread_mutex_unlock(m_mutex);
             return &instance;  
         }  
           
@@ -47,7 +48,6 @@ class Log
         }  
   
     private:  
-        pthread_mutex_t *m_mutex;	//互斥锁 
         char dir_name[128];  		//路径名
         char log_name[128];  		//log文件名
         int m_split_lines;  		//日志最大行数

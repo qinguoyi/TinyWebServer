@@ -24,8 +24,10 @@ Demo
 
 <div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/loginnew.gif" height="429"/> </div>
 
+
 测试结果
 -------------
+使用该项目的webbench测试的时候，如果遇到webbench命令找不到错误，可以将文件webbench删除，重新编译即可。
 Webbench对服务器进行压力测试，可以实现上万的并发连接.
 > * 并发连接总数：10500
 > * 访问服务器时间：5s
