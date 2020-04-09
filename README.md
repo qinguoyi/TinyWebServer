@@ -5,14 +5,14 @@ TinyWebServer
 Linux下的简易web服务器，实现web端用户注册，登录功能,经压力测试可以实现上万的并发连接数据交换.
 > * C/C++
 > * B/S模型
-> * [线程同步机制包装类](https://github.com/twomonkeyclub/TinyWebServer/tree/master/lock)
-> * [http连接请求处理类](https://github.com/twomonkeyclub/TinyWebServer/tree/master/http)
-> * [半同步/半反应堆线程池](https://github.com/twomonkeyclub/TinyWebServer/tree/master/threadpool)
-> * [定时器处理非活动连接](https://github.com/twomonkeyclub/TinyWebServer/tree/master/timer)
-> * [同步/异步日志系统 ](https://github.com/twomonkeyclub/TinyWebServer/tree/master/log)  
-> * [数据库连接池](https://github.com/twomonkeyclub/TinyWebServer/tree/master/CGImysql) 
-> * [CGI及同步线程注册和登录校验](https://github.com/twomonkeyclub/TinyWebServer/tree/master/CGImysql) 
-> * [简易服务器压力测试](https://github.com/twomonkeyclub/TinyWebServer/tree/master/test_presure)
+> * [线程同步机制包装类](https://github.com/qinguoyi/TinyWebServer/tree/master/lock)
+> * [http连接请求处理类](https://github.com/qinguoyi/TinyWebServer/tree/master/http)
+> * [半同步/半反应堆线程池](https://github.com/qinguoyi/TinyWebServer/tree/master/threadpool)
+> * [定时器处理非活动连接](https://github.com/qinguoyi/TinyWebServer/tree/master/timer)
+> * [同步/异步日志系统 ](https://github.com/qinguoyi/TinyWebServer/tree/master/log)  
+> * [数据库连接池](https://github.com/qinguoyi/TinyWebServer/tree/master/CGImysql) 
+> * [CGI及同步线程注册和登录校验](https://github.com/qinguoyi/TinyWebServer/tree/master/CGImysql) 
+> * [简易服务器压力测试](https://github.com/qinguoyi/TinyWebServer/tree/master/test_presure)
 
 Demo
 ----------
