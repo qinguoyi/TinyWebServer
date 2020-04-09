@@ -20,9 +20,9 @@ class connection_pool
 		void DestroyPool();			//销毁所有连接
 
 		//单例模式获取一个连接
-		static connection_pool * GetInstance(string url,string User,string PassWord,string DataName,int Port,unsigned int MaxConn);
+		static connection_pool* GetInstance(string url,string User,string PassWord,string DataName,int Port,unsigned int MaxConn);
 		int GetFreeConn();
-		
+
 		connection_pool();
 		~connection_pool();
 

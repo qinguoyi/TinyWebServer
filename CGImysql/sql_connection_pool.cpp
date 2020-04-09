@@ -13,6 +13,7 @@ using namespace std;
 connection_pool* connection_pool::connPool = NULL;
 static pthread_mutex_t mutex;
 
+//初始化mutex
 connection_pool::connection_pool() 
 {
 	pthread_mutex_init(&mutex, NULL);
