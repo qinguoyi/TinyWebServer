@@ -15,10 +15,10 @@ const char* error_500_title="Internal Error";
 const char* error_500_form="There was an unusual problem serving the request file.\n";
 
 //当浏览器出现连接重置时，可能是网站根目录出错或http响应格式出错或者访问的文件中内容完全为空
-const char* doc_root="/home/qgy/github/ini_tinywebserver/root";
+const char* doc_root="/home/like/TinyWebServer/root";
 
 //创建数据库连接池
-connection_pool *connPool=connection_pool::GetInstance("localhost","root","root","qgydb",3306,5);
+connection_pool *connPool=connection_pool::GetInstance("localhost","root","123456","yourdb",3306,5);
 
 //将表中的用户名和密码放入map
 map<string,string> users;

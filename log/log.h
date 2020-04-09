@@ -10,6 +10,7 @@
 using namespace std;  
   
 static pthread_mutex_t *m_mutex = new pthread_mutex_t;	//互斥锁 
+
 class Log  
 {  
     public:  

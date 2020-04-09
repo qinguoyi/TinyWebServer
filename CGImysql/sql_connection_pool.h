@@ -22,7 +22,8 @@ class connection_pool
 		//单例模式获取一个连接
 		static connection_pool * GetInstance(string url,string User,string PassWord,string DataName,int Port,unsigned int MaxConn);
 		int GetFreeConn();
-
+		
+		connection_pool();
 		~connection_pool();
 
 	private:

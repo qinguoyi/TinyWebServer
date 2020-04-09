@@ -16,7 +16,7 @@ int main(int argc,char *argv[])
 
     //初始化数据库连接池，连接池为静态大小
     //通过主机地址和登录账号，密码进入服务器数据库，选择qgydb库
-    connection_pool *connPool=connection_pool::GetInstance("localhost","root","root","qgydb",3306,5);
+    connection_pool *connPool=connection_pool::GetInstance("localhost","root","123456","yourdb",3306,5);
     
     //在连接池中取一个连接
     MYSQL *mysql=connPool->GetConnection();
