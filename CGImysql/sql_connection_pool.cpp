@@ -11,6 +11,13 @@
 using namespace std;
 
 connection_pool* connection_pool::connPool = NULL;
+static pthread_mutex_t mutex;
+
+//初始化mutex
+connection_pool::connection_pool() 
+{
+	pthread_mutex_init(&mutex, NULL);
+}
 
 //构造初始化
 connection_pool::connection_pool(string url,string User,string PassWord,string DBName,int Port,unsigned int MaxConn)
@@ -54,9 +61,13 @@ connection_pool* connection_pool::GetInstance(string url,string User,string Pass
 	//先判断是否为空，若为空则创建，否则直接返回现有
 	if(connPool == NULL)
 	{
-		connPool = new connection_pool(url,User,PassWord,DBName,Port,MaxConn);
+		pthread_mutex_lock(&mutex);
+		if(connPool == NULL) 
+		{
+			connPool = new connection_pool(url,User,PassWord,DBName,Port,MaxConn);
+		}
+		pthread_mutex_unlock(&mutex);
 	}
-
 	return connPool;
 }
 
