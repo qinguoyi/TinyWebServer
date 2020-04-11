@@ -14,6 +14,11 @@ Linux下的简易web服务器，实现web端用户注册，登录功能,经压�
 > * [CGI及同步线程注册和登录校验](https://github.com/qinguoyi/TinyWebServer/tree/master/CGImysql) 
 > * [简易服务器压力测试](https://github.com/qinguoyi/TinyWebServer/tree/master/test_presure)
 
+Update
+----------
+- [x] 解决请求服务器上大文件的Bug
+
+
 Demo
 ----------
 > * 注册演示
@@ -23,6 +28,14 @@ Demo
 > * 登录演示
 
 <div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/loginnew.gif" height="429"/> </div>
+
+> * 请求图片文件演示(6M)
+
+<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/picture.gif" height="429"/> </div>
+
+> * 请求视频文件演示(39M)
+
+<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/video.gif" height="429"/> </div>
 
 
 测试结果
@@ -98,7 +111,7 @@ web端测试
 * 修改http_conn.cpp中的root路径
 
     ```C++
-    const char* doc_root="/home/qgy/github/ini_tinywebserver/root";
+    const char* doc_root="/home/qgy/TinyWebServer-master/root";
     ```
 * 选择任一校验方式，代码中使用同步校验。当使用CGI时才进行如下修改，否则可跳过本步骤，直接生成server
 

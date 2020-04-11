@@ -15,7 +15,7 @@ const char* error_500_title="Internal Error";
 const char* error_500_form="There was an unusual problem serving the request file.\n";
 
 //当浏览器出现连接重置时，可能是网站根目录出错或http响应格式出错或者访问的文件中内容完全为空
-const char* doc_root="/home/qgy/github/ini_tinywebserver/root";
+const char* doc_root="/home/qgy/github/TinyWebServer/root";
 
 //创建数据库连接池
 connection_pool *connPool=connection_pool::GetInstance("localhost","root","root","qgydb",3306,5);
@@ -78,8 +78,8 @@ void addfd(int epollfd,int fd,bool one_shot)
 //从内核时间表删除描述符
 void removefd(int epollfd,int fd)
 {
-        epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,0);
-        close(fd);
+    epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,0);
+    close(fd);
 }
 
 //将事件重置为EPOLLONESHOT
@@ -121,6 +121,8 @@ void http_conn::init(int sockfd,const sockaddr_in& addr)
 //check_state默认为分析请求行状态
 void http_conn::init()
 {
+    bytes_to_send = 0;
+    bytes_have_send= 0;
     m_check_state=CHECK_STATE_REQUESTLINE;
     m_linger=false;
     m_method=GET;
@@ -517,6 +519,27 @@ http_conn::HTTP_CODE http_conn::do_request()
 	
 	free(m_url_real);
     }
+    else if( *(p+1) == '5'){
+	char *m_url_real = (char *)malloc(sizeof(char) * 200);
+	strcpy(m_url_real,"/picture.html");
+	strncpy(m_real_file+len,m_url_real,strlen(m_url_real));
+	
+	free(m_url_real);
+    }
+    else if( *(p+1) == '6'){
+	char *m_url_real = (char *)malloc(sizeof(char) * 200);
+	strcpy(m_url_real,"/video.html");
+	strncpy(m_real_file+len,m_url_real,strlen(m_url_real));
+	
+	free(m_url_real);
+    }
+    else if( *(p+1) == '7'){
+	char *m_url_real = (char *)malloc(sizeof(char) * 200);
+	strcpy(m_url_real,"/fans.html");
+	strncpy(m_real_file+len,m_url_real,strlen(m_url_real));
+	
+	free(m_url_real);
+    }
     else
     	strncpy(m_real_file+len,m_url,FILENAME_LEN-len-1);
 
@@ -543,22 +566,33 @@ void http_conn::unmap()
 bool http_conn::write()
 {
     int temp=0;
-    int bytes_have_send=0;
-    int bytes_to_send=m_write_idx;
+
+    int newadd = 0;
+
     if(bytes_to_send==0)
     {
         modfd(m_epollfd,m_sockfd,EPOLLIN);
         init();
         return true;
     }
+    //printf("剩余发送字节数:%d\n",bytes_to_send);
     while(1)
     {
         temp=writev(m_sockfd,m_iv,m_iv_count);
-        //printf("temp:%d\n",temp);
+
+	if(temp > 0){
+	    //printf("已发送:%d\n",temp);
+	    bytes_have_send += temp;
+	    newadd = bytes_have_send - m_write_idx;
+	}
         if(temp<=-1)
         {
             if(errno==EAGAIN)
             {
+		m_iv[0].iov_len = 0;
+		m_iv[1].iov_base = m_file_address + newadd ;
+		m_iv[1].iov_len = bytes_to_send - temp;
+		//printf("缓冲区满了\n");
                 modfd(m_epollfd,m_sockfd,EPOLLOUT);
                 return true;
             }
@@ -566,8 +600,8 @@ bool http_conn::write()
             return false;
         }
         bytes_to_send-=temp;
-        bytes_have_send+=temp;
         if(bytes_to_send<=0)
+
         {
             unmap();
             if(m_linger)
@@ -674,6 +708,7 @@ bool http_conn::process_write(HTTP_CODE ret)
                     m_iv[1].iov_base=m_file_address;
                     m_iv[1].iov_len=m_file_stat.st_size;
                     m_iv_count=2;
+		    bytes_to_send = m_write_idx + m_file_stat.st_size;
                     return true;
                 }
                 else
@@ -690,6 +725,7 @@ bool http_conn::process_write(HTTP_CODE ret)
     m_iv[0].iov_base=m_write_buf;
     m_iv[0].iov_len=m_write_idx;
     m_iv_count=1;
+    bytes_to_send = m_write_idx;
     return true;
 }
 void http_conn::process()

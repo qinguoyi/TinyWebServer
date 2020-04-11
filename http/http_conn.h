@@ -88,5 +88,7 @@ class http_conn{
         int m_iv_count;
 	int cgi;//是否启用的POST
         char *m_string;//存储请求头数据
+	int bytes_to_send;
+	int bytes_have_send;
 };
 #endif
