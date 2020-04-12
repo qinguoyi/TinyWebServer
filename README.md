@@ -176,10 +176,6 @@ web端测试
     ip:port
     ```
 
-致谢
-------------
-Linux高性能服务器编程，游双著.
-
 更多资料
 ------------
 请关注公众号 **“两猿社”**.
@@ -187,3 +183,7 @@ Linux高性能服务器编程，游双著.
 > * **项目模块详细讲解，在公众号内持续更新！！！**
 
 <div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/test1.jpg" height="350"/> </div>
+
+致谢
+------------
+Linux高性能服务器编程，游双著.
