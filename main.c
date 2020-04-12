@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     //单例模式创建数据库连接池
-    connection_pool *connPool = connection_pool::GetInstance("localhost", "root", "root", "qgydb", 3306, 5);
+    //connection_pool *connPool = connection_pool::GetInstance("localhost", "root", "root", "qgydb", 3306, 5);
 
     http_conn *users = new http_conn[MAX_FD];
     assert(users);
@@ -325,6 +325,6 @@ int main(int argc, char *argv[])
     delete[] users_timer;
     delete pool;
     //销毁数据库连接池
-    connPool->DestroyPool();
+    //connPool->DestroyPool();
     return 0;
 }
