@@ -575,13 +575,12 @@ bool http_conn::write()
         init();
         return true;
     }
-    //printf("剩余发送字节数:%d\n",bytes_to_send);
+
     while(1)
     {
         temp=writev(m_sockfd,m_iv,m_iv_count);
 
 	if(temp > 0){
-	    //printf("已发送:%d\n",temp);
 	    bytes_have_send += temp;
 	    newadd = bytes_have_send - m_write_idx;
 	}
@@ -589,10 +588,15 @@ bool http_conn::write()
         {
             if(errno==EAGAIN)
             {
-		m_iv[0].iov_len = 0;
-		m_iv[1].iov_base = m_file_address + newadd ;
-		m_iv[1].iov_len = bytes_to_send - temp;
-		//printf("缓冲区满了\n");
+		if(bytes_have_send >= m_iv[0].iov_len){
+		    m_iv[0].iov_len = 0;
+		    m_iv[1].iov_base = m_file_address + newadd ;
+		    m_iv[1].iov_len = bytes_to_send;
+		}
+		else{
+		    m_iv[0].iov_base = m_write_buf + bytes_to_send;
+		    m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
+		}
                 modfd(m_epollfd,m_sockfd,EPOLLOUT);
                 return true;
             }
@@ -606,8 +610,6 @@ bool http_conn::write()
             unmap();
             if(m_linger)
             {
-		//printf("========================\n");
-		//printf("%s\n", "发送响应成功");
                 init();
                 modfd(m_epollfd,m_sockfd,EPOLLIN);
                 return true;
