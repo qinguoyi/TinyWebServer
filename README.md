@@ -95,12 +95,6 @@ web端测试
     //添加数据
     INSERT INTO user(username, passwd) VALUES('name', 'passwd');
     ```
-* 修改main.c中的数据库初始化信息
-
-    ```C++
-    //root root为服务器数据库的登录名和密码
-    connection_pool *connPool=connection_pool::GetInstance("localhost","root","root","yourdb",3306,5);
-    ```
 
 * 修改http_conn.cpp中的数据库初始化信息
 
