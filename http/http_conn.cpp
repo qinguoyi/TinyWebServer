@@ -3,6 +3,12 @@
 #include <map>
 #include<mysql/mysql.h>
 
+//同步校验
+#define SYN
+
+//CGI多进程
+//#define CGI
+
 //定义http响应的一些状态信息
 const char* ok_200_title="OK";
 const char* error_400_title="Bad Request";
@@ -359,7 +365,6 @@ http_conn::HTTP_CODE http_conn::do_request()
     //printf("m_url:%s\n", m_url);
     const char *p = strrchr(m_url, '/'); 
     
-//#if 0
     //处理cgi
     if(cgi==1 && (*(p+1) == '2' || *(p+1) == '3'))
     {
@@ -387,7 +392,7 @@ http_conn::HTTP_CODE http_conn::do_request()
         password[j]='\0';
 
 //同步线程登录校验
-//#if 0
+#ifdef SYN
 	pthread_mutex_t lock;
         pthread_mutex_init(&lock, NULL);
 
@@ -429,10 +434,10 @@ http_conn::HTTP_CODE http_conn::do_request()
 			strcpy(m_url, "/logError.html");
 	}
 	connPool->ReleaseConnection(mysql);
-//#endif
+#endif
 
 //CGI多进程登录校验
-#if 0
+#ifdef CGI
 
 	//fd[0]:读管道，fd[1]:写管道
         pid_t pid;

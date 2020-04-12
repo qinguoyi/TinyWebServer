@@ -112,20 +112,18 @@ web端测试
 * 修改http_conn.cpp中的root路径
 
     ```C++
-    const char* doc_root="/home/qgy/TinyWebServer-master/root";
+    const char* doc_root="/home/qgy/TinyWebServer/root";
     ```
 * 选择任一校验方式，代码中使用同步校验。当使用CGI时才进行如下修改，否则可跳过本步骤，直接生成server
 
 - [ ] CGI多进程注册/登录校验
 	* 打开http_conn.cpp中CGI,关闭同步线程
 	    ```C++
-	    380 //同步线程登录校验
-	    381 //#if 0
-	    423 //#endif
+	    6 //同步线程登录校验
+	    7 #define SYN
 
-	    425 //CGI多进程登录校验
-	    426 #if 0
-	    495 #endif
+	    9  //CGI多进程登录校验
+	    10 //#define SYN
 	    ```
 	
 	* 修改sign.cpp中的数据库初始化信息
@@ -149,13 +147,11 @@ web端测试
 	* 关闭http_conn.cpp中CGI,打开同步线程
 	    
 	    ```C++
-	    380 //同步线程登录校验
-	    381 #if 0
-	    423 #endif
+	    6 //同步线程登录校验
+	    7 //#define SYN
 
-	    425 //CGI多进程登录校验
-	    426 //#if 0
-	    495 //#endif
+	    9  //CGI多进程登录校验
+	    10/#define SYN
 	    ```
 
 * 生成server
