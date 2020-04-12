@@ -120,10 +120,10 @@ web端测试
 	* 打开http_conn.cpp中CGI,关闭同步线程
 	    ```C++
 	    6 //同步线程登录校验
-	    7 #define SYN
+	    7 //#define SYN
 
 	    9  //CGI多进程登录校验
-	    10 //#define SYN
+	    10 #define CGI
 	    ```
 	
 	* 修改sign.cpp中的数据库初始化信息
@@ -148,10 +148,10 @@ web端测试
 	    
 	    ```C++
 	    6 //同步线程登录校验
-	    7 //#define SYN
+	    7 #define SYN
 
 	    9  //CGI多进程登录校验
-	    10/#define SYN
+	    10 //#define CGI
 	    ```
 
 * 生成server
