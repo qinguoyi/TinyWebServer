@@ -77,7 +77,7 @@ public:
     {
         return &m_address;
     }
-    void initmysql_result();
+    void initmysql_result(connection_pool *connPool);
 
 private:
     void init();
@@ -102,6 +102,7 @@ private:
 public:
     static int m_epollfd;
     static int m_user_count;
+    MYSQL *mysql;
 
 private:
     int m_sockfd;

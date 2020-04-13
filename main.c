@@ -105,25 +105,26 @@ int main(int argc, char *argv[])
     //忽略SIGPIPE信号
     addsig(SIGPIPE, SIG_IGN);
 
+    //单例模式创建数据库连接池
+    connection_pool *connPool = connection_pool::GetInstance("localhost", "root", "root", "qgydb", 3306, 8);
+
     //创建线程池
     threadpool<http_conn> *pool = NULL;
     try
     {
-        pool = new threadpool<http_conn>;
+        pool = new threadpool<http_conn>(connPool);
     }
     catch (...)
     {
         return 1;
     }
-    //单例模式创建数据库连接池
-    connection_pool *connPool = connection_pool::GetInstance("localhost", "root", "root", "qgydb", 3306, 5);
 
     http_conn *users = new http_conn[MAX_FD];
     assert(users);
     int user_count = 0;
 
     //初始化数据库读取表
-    users->initmysql_result();
+    users->initmysql_result(connPool);
 
     //创建套接字，返回listenfd
     int listenfd = socket(PF_INET, SOCK_STREAM, 0);
@@ -285,7 +286,6 @@ int main(int argc, char *argv[])
                     {
                         time_t cur = time(NULL);
                         timer->expire = cur + 3 * TIMESLOT;
-                        //printf( "adjust timer once\n" );
                         LOG_INFO("%s", "adjust timer once");
                         Log::get_instance()->flush();
                         timer_lst.adjust_timer(timer);
@@ -294,6 +294,7 @@ int main(int argc, char *argv[])
                 else
                 {
                     users[sockfd].close_conn();
+
                     cb_func(&users_timer[sockfd]);
                     if (timer)
                     {
@@ -305,11 +306,10 @@ int main(int argc, char *argv[])
             {
 
                 if (!users[sockfd].write())
+                {
                     users[sockfd].close_conn();
+                }
             }
-            //else
-            //{
-            //}
         }
         if (timeout)
         {

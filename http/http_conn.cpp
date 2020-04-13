@@ -23,13 +23,10 @@ const char *error_500_form = "There was an unusual problem serving the request f
 //当浏览器出现连接重置时，可能是网站根目录出错或http响应格式出错或者访问的文件中内容完全为空
 const char *doc_root = "/home/qgy/github/TinyWebServer/root";
 
-//创建数据库连接池
-connection_pool *connPool = connection_pool::GetInstance("localhost", "root", "root", "qgydb", 3306, 5);
-
 //将表中的用户名和密码放入map
 map<string, string> users;
 
-void http_conn::initmysql_result()
+void http_conn::initmysql_result(connection_pool *connPool)
 {
     //先从连接池中取一个连接
     MYSQL *mysql = connPool->GetConnection();
@@ -126,6 +123,7 @@ void http_conn::init(int sockfd, const sockaddr_in &addr)
 //check_state默认为分析请求行状态
 void http_conn::init()
 {
+    mysql = NULL;
     bytes_to_send = 0;
     bytes_have_send = 0;
     m_check_state = CHECK_STATE_REQUESTLINE;
@@ -395,7 +393,7 @@ http_conn::HTTP_CODE http_conn::do_request()
         pthread_mutex_init(&lock, NULL);
 
         //从连接池中取一个连接
-        MYSQL *mysql = connPool->GetConnection();
+        //MYSQL *mysql = connPool->GetConnection();
 
         //如果是注册，先检测数据库中是否有重名的
         //没有重名的，进行增加数据
@@ -434,7 +432,6 @@ http_conn::HTTP_CODE http_conn::do_request()
             else
                 strcpy(m_url, "/logError.html");
         }
-        connPool->ReleaseConnection(mysql);
 #endif
 
 //CGI多进程登录校验
