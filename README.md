@@ -75,7 +75,7 @@ web端界面
 
 <div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/interface/signin.jpg" height="200"/><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/interface/signinfail.jpg" height="200"/></div>
 
-web端测试
+基础测试
 ------------
 * 服务器测试环境
 	* Ubuntu版本16.04
@@ -110,7 +110,28 @@ web端测试
     ```C++
     const char* doc_root="/home/qgy/TinyWebServer/root";
     ```
-* 选择任一校验方式，代码中使用同步校验。当使用CGI时才进行如下修改，否则可跳过本步骤.
+
+* 生成server
+
+    ```C++
+    make server
+    ```
+
+* 启动server
+
+    ```C++
+    ./server port
+    ```
+
+* 浏览器端
+
+    ```C++
+    ip:port
+    ```
+
+个性化测试
+------
+*选择任一**校验方式**，代码中使用同步校验，可以修改为CGI.
 
 - [x] 同步线程数据库校验
 	* 关闭main.c中CGISQLPOOL，打开SYNSQL
@@ -204,7 +225,7 @@ web端测试
 	    make CGISQL.cgi
 	    ```
 
-* 选择任一日志方式，代码中使用同步日志。当测试不同写入方式时才进行如下修改，否则可跳过本步骤.
+* 选择任一**日志方式**，代码中使用同步日志，可以修改为异步写入.
 
 - [x] 同步写入日志
 	* 关闭main.c中ASYNLOG，打开同步写入SYNLOG
@@ -221,25 +242,7 @@ web端测试
 	    25 //#define SYNLOG //同步写日志
 	    26 #define ASYNLOG   /异步写日志
 	    ```
-
-
-* 生成server
-
-    ```C++
-    make server
-    ```
-
-* 启动server
-
-    ```C++
-    ./server port
-    ```
-
-* 浏览器端
-
-    ```C++
-    ip:port
-    ```
+* 选择不同的数据库访问或日志写入后，按照前述生成server，启动server，即可进行测试.
 
 更多资料
 ------------
