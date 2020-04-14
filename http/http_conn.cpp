@@ -511,7 +511,7 @@ http_conn::HTTP_CODE http_conn::do_request()
                     strcpy(m_url, "/log.html");
                     pthread_mutex_lock(&lock);
                     //每次都需要重新更新id_passwd.txt
-                    ofstream out("./CGImysql/id_passwd.txt");
+                    ofstream out("./CGImysql/id_passwd.txt", ios::app);
                     out << name << " " << password << endl;
                     out.close();
                     pthread_mutex_unlock(&lock);
