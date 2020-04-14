@@ -18,6 +18,8 @@ Update
 ----------
 - [x] 解决请求服务器上大文件的Bug
 - [x] 增加请求视频文件的页面
+- [x] 解决数据库同步校验内存泄漏
+- [x] 实现两种CGI数据库访问逻辑
 
 
 Demo
@@ -108,45 +110,118 @@ web端测试
     ```C++
     const char* doc_root="/home/qgy/TinyWebServer/root";
     ```
-* 选择任一校验方式，代码中使用同步校验。当使用CGI时才进行如下修改，否则可跳过本步骤，直接生成server
+* 选择任一校验方式，代码中使用同步校验。当使用CGI时才进行如下修改，否则可跳过本步骤.
 
-- [ ] CGI多进程注册/登录校验
-	* 打开http_conn.cpp中CGI,关闭同步线程
+- [x] 同步线程数据库校验
+	* 关闭main.c中CGISQLPOOL，打开SYNSQL
+
+	   ```C++
+		23 #define SYNSQL    //同步数据库校验
+		24 //#define CGISQLPOOL  //CGI数据库校验
+	    ```
+
+	* 关闭http_conn.cpp中两种CGI，打开SYNSQL
+	    
 	    ```C++
-	    6 //同步线程登录校验
-	    7 //#define SYN
+		7 //同步校验
+		8 #define SYNSQL
 
-	    9  //CGI多进程登录校验
-	    10 #define CGI
+		10 //CGI多进程使用链接池
+		11 //#define CGISQLPOOL
+
+		13 //CGI多进程不用连接池
+		14 //#define CGISQL
+	    ```
+
+- [ ] CGI多进程数据库校验，不使用连接池
+	* 关闭main.c中SYNSQL和CGISQLPOOL
+
+	   ```C++
+		23 //#define SYNSQL    //同步数据库校验
+		24 //#define CGISQLPOOL  //CGI数据库校验
+	    ```
+
+	* 关闭http_conn.cpp中SYNSQL和CGISQLPOOL，打开CGISQL
+	    
+	    ```C++
+		7 //同步校验
+		8 //#define SYNSQL
+
+		10 //CGI多进程使用链接池
+		11 //#define CGISQLPOOL
+
+		13 //CGI多进程不用连接池
+		14 #define CGISQL
 	    ```
 	
+	* 关闭sign.cpp中的CGISQLPOOL，打开CGISQL
+
+	    ```C++
+	    12 #define CGISQL    //不使用连接池
+		13 //#define CGISQLPOOL  //使用连接池
+	    ```
 	* 修改sign.cpp中的数据库初始化信息
 
 	    ```C++
 	    //root root为服务器数据库的登录名和密码
 	    connection_pool *connPool=connection_pool::GetInstance("localhost","root","root","yourdb",3306,5);
 	    ```
-	* 生成check.cgi
+	* 生成CGISQL.cgi
 
 	    ```C++
-	    make check.cgi
-	    ```
-	* 将生成的check.cgi放到root文件夹
-
-	    ```C++
-	    cp ./check.cgi ./root
+	    make CGISQL.cgi
 	    ```
 
-- [x] 同步线程注册/登录校验
-	* 关闭http_conn.cpp中CGI,打开同步线程
+- [ ] CGI多进程数据库校验，使用连接池
+	* 关闭main.c中SYNSQL，打开CGISQLPOOL
+
+	   ```C++
+		23 //#define SYNSQL    //同步数据库校验
+		24 #define CGISQLPOOL  //CGI数据库校验
+	    ```
+
+	* 关闭http_conn.cpp中SYNSQL和CGISQL，打开CGISQLPOOL
 	    
 	    ```C++
-	    6 //同步线程登录校验
-	    7 #define SYN
+		7 //同步校验
+		8 //#define SYNSQL
 
-	    9  //CGI多进程登录校验
-	    10 //#define CGI
+		10 //CGI多进程使用链接池
+		11 #define CGISQLPOOL
+
+		13 //CGI多进程不用连接池
+		14 //#define CGISQL
 	    ```
+	* 关闭sign.cpp中的CGISQL，打开CGISQLPOOL
+
+	    ```C++
+	    12 //#define CGISQL    //不使用连接池
+		13 #define CGISQLPOOL  //使用连接池
+	    ```
+	* 生成CGISQL.cgi
+
+	    ```C++
+	    make CGISQL.cgi
+	    ```
+
+* 选择任一日志方式，代码中使用同步日志。当测试不同写入方式时才进行如下修改，否则可跳过本步骤.
+
+- [x] 同步写入日志
+	* 关闭main.c中ASYNLOG，打开同步写入SYNLOG
+	    
+	    ```C++
+	    25 #define SYNLOG //同步写日志
+	    26 //#define ASYNLOG   /异步写日志
+	    ```
+
+- [ ] 异步写入日志
+	* 关闭main.c中SYNLOG，打开异步写入ASYNLOG
+	    
+	    ```C++
+	    25 //#define SYNLOG //同步写日志
+	    26 #define ASYNLOG   /异步写日志
+	    ```
+
 
 * 生成server
 

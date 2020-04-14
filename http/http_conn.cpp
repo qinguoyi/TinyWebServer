@@ -2,12 +2,16 @@
 #include "../log/log.h"
 #include <map>
 #include <mysql/mysql.h>
+#include <fstream>
 
 //同步校验
-#define SYN
+#define SYNSQL
 
-//CGI多进程
-//#define CGI
+//CGI多进程使用链接池
+//#define CGISQLPOOL
+
+//CGI多进程不用连接池
+//#define CGISQL
 
 //定义http响应的一些状态信息
 const char *ok_200_title = "OK";
@@ -25,6 +29,8 @@ const char *doc_root = "/home/qgy/github/TinyWebServer/root";
 
 //将表中的用户名和密码放入map
 map<string, string> users;
+
+#ifdef SYNSQL
 
 void http_conn::initmysql_result(connection_pool *connPool)
 {
@@ -56,6 +62,47 @@ void http_conn::initmysql_result(connection_pool *connPool)
     //将连接归还连接池
     connPool->ReleaseConnection(mysql);
 }
+
+#endif
+
+#ifdef CGISQLPOOL
+
+void http_conn::initresultFile(connection_pool *connPool)
+{
+    ofstream out("./CGImysql/id_passwd.txt");
+    //先从连接池中取一个连接
+    MYSQL *mysql = connPool->GetConnection();
+
+    //在user表中检索username，passwd数据，浏览器端输入
+    if (mysql_query(mysql, "SELECT username,passwd FROM user"))
+    {
+        LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
+    }
+
+    //从表中检索完整的结果集
+    MYSQL_RES *result = mysql_store_result(mysql);
+
+    //返回结果集中的列数
+    int num_fields = mysql_num_fields(result);
+
+    //返回所有字段结构的数组
+    MYSQL_FIELD *fields = mysql_fetch_fields(result);
+
+    //从结果集中获取下一行，将对应的用户名和密码，存入map中
+    while (MYSQL_ROW row = mysql_fetch_row(result))
+    {
+        string temp1(row[0]);
+        string temp2(row[1]);
+        out << temp1 << " " << temp2 << endl;
+        users[temp1] = temp2;
+    }
+    //将连接归还连接池
+    connPool->ReleaseConnection(mysql);
+    out.close();
+}
+
+#endif
+
 //对文件描述符设置非阻塞
 int setnonblocking(int fd)
 {
@@ -382,31 +429,29 @@ http_conn::HTTP_CODE http_conn::do_request()
         for (i = 5; m_string[i] != '&'; ++i)
             name[i - 5] = m_string[i];
         name[i - 5] = '\0';
+
         int j = 0;
         for (i = i + 10; m_string[i] != '\0'; ++i, ++j)
             password[j] = m_string[i];
         password[j] = '\0';
 
 //同步线程登录校验
-#ifdef SYN
+#ifdef SYNSQL
         pthread_mutex_t lock;
         pthread_mutex_init(&lock, NULL);
 
-        //从连接池中取一个连接
-        //MYSQL *mysql = connPool->GetConnection();
-
-        //如果是注册，先检测数据库中是否有重名的
-        //没有重名的，进行增加数据
-        char *sql_insert = (char *)malloc(sizeof(char) * 200);
-        strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
-        strcat(sql_insert, "'");
-        strcat(sql_insert, name);
-        strcat(sql_insert, "', '");
-        strcat(sql_insert, password);
-        strcat(sql_insert, "')");
-
         if (*(p + 1) == '3')
         {
+            //如果是注册，先检测数据库中是否有重名的
+            //没有重名的，进行增加数据
+            char *sql_insert = (char *)malloc(sizeof(char) * 200);
+            strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
+            strcat(sql_insert, "'");
+            strcat(sql_insert, name);
+            strcat(sql_insert, "', '");
+            strcat(sql_insert, password);
+            strcat(sql_insert, "')");
+
             if (users.find(name) == users.end())
             {
 
@@ -434,9 +479,105 @@ http_conn::HTTP_CODE http_conn::do_request()
         }
 #endif
 
-//CGI多进程登录校验
-#ifdef CGI
-        //printf("CGI\n");
+
+//CGI用连接池,注册在父进程,登录在子进程
+#ifdef CGISQLPOOL
+
+        //注册
+        pthread_mutex_t lock;
+        pthread_mutex_init(&lock, NULL);
+
+        if (*(p + 1) == '3')
+        {
+            //如果是注册，先检测数据库中是否有重名的
+            //没有重名的，进行增加数据
+            char *sql_insert = (char *)malloc(sizeof(char) * 200);
+            strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
+            strcat(sql_insert, "'");
+            strcat(sql_insert, name);
+            strcat(sql_insert, "', '");
+            strcat(sql_insert, password);
+            strcat(sql_insert, "')");
+
+            if (users.find(name) == users.end())
+            {
+                pthread_mutex_lock(&lock);
+                int res = mysql_query(mysql, sql_insert);
+                users.insert(pair<string, string>(name, password));
+                pthread_mutex_unlock(&lock);
+
+                if (!res)
+                {
+                    strcpy(m_url, "/log.html");
+                    pthread_mutex_lock(&lock);
+                    //每次都需要重新更新id_passwd.txt
+                    ofstream out("./CGImysql/id_passwd.txt");
+                    out << name << " " << password << endl;
+                    out.close();
+                    pthread_mutex_unlock(&lock);
+                }
+                else
+                    strcpy(m_url, "/registerError.html");
+            }
+            else
+                strcpy(m_url, "/registerError.html");
+        }
+        //登录
+        else if (*(p + 1) == '2')
+        {
+            pid_t pid;
+            int pipefd[2];
+            if (pipe(pipefd) < 0)
+            {
+                LOG_ERROR("pipe() error:%d", 4);
+                return BAD_REQUEST;
+            }
+            if ((pid = fork()) < 0)
+            {
+                LOG_ERROR("fork() error:%d", 3);
+                return BAD_REQUEST;
+            }
+
+            if (pid == 0)
+            {
+                //标准输出，文件描述符是1，然后将输出重定向到管道写端
+                dup2(pipefd[1], 1);
+                //关闭管道的读端
+                close(pipefd[0]);
+                //父进程去执行cgi程序，m_real_file,name,password为输入
+                execl(m_real_file, name, password, "./CGImysql/id_passwd.txt", NULL);
+            }
+            else
+            {
+                //子进程关闭写端，打开读端，读取父进程的输出
+                close(pipefd[1]);
+                char result;
+                int ret = read(pipefd[0], &result, 1);
+
+                if (ret != 1)
+                {
+                    LOG_ERROR("管道read error:ret=%d", ret);
+                    return BAD_REQUEST;
+                }
+
+                LOG_INFO("%s", "登录检测");
+                Log::get_instance()->flush();
+                //当用户名和密码正确，则显示welcome界面，否则显示错误界面
+                if (result == '1')
+                    strcpy(m_url, "/welcome.html");
+                else
+                    strcpy(m_url, "/logError.html");
+
+                //回收进程资源
+                waitpid(pid, NULL, 0);
+            }
+        }
+
+#endif
+
+//CGI多进程登录校验,不用数据库连接池
+//子进程完成注册和登录
+#ifdef CGISQL
         //fd[0]:读管道，fd[1]:写管道
         pid_t pid;
         int pipefd[2];
@@ -459,7 +600,7 @@ http_conn::HTTP_CODE http_conn::do_request()
             close(pipefd[0]);
             //父进程去执行cgi程序，m_real_file,name,password为输入
             //./check.cgi name password
-            execl(m_real_file, &flag, name, password, NULL);
+            execl(m_real_file, &flag, name,password,NULL);
         }
         else
         {

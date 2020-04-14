@@ -5,7 +5,12 @@
 #include <cstdio>
 #include "sql_connection_pool.h"
 #include <map>
+#include <fstream>
+#include <sstream>
 using namespace std;
+
+//#define CGISQL    //不使用连接池
+#define CGISQLPOOL  //使用连接池
 
 int main(int argc, char *argv[])
 {
@@ -14,20 +19,32 @@ int main(int argc, char *argv[])
     pthread_mutex_t lock;
     pthread_mutex_init(&lock, NULL);
 
-    //初始化数据库连接池，连接池为静态大小
-    //通过主机地址和登录账号，密码进入服务器数据库，选择qgydb库
-    connection_pool *connPool = connection_pool::GetInstance("localhost", "root", "root", "qgydb", 3306, 5);
+#ifdef CGISQL
 
-    //在连接池中取一个连接
-    MYSQL *mysql = connPool->GetConnection();
-    //在user表中检索username，passwd数据，浏览器端输入
-    if (mysql_query(mysql, "SELECT username,passwd FROM user"))
+    MYSQL *con = NULL;
+    con = mysql_init(con);
+
+    if (con == NULL)
     {
-        printf("INSERT error:%s\n", mysql_error(mysql));
+        cout << "Error:" << mysql_error(con);
+        exit(1);
+    }
+    con = mysql_real_connect(con, "localhost", "root", "root", "qgydb", 3306, NULL, 0);
+
+    if (con == NULL)
+    {
+        cout << "Error: " << mysql_error(con);
+        exit(1);
+    }
+
+    //在user表中检索username，passwd数据，浏览器端输入
+    if (mysql_query(con, "SELECT username,passwd FROM user"))
+    {
+        printf("INSERT error:%s\n", mysql_error(con));
         return -1;
     }
     //从表中检索完整的结果集
-    MYSQL_RES *result = mysql_store_result(mysql);
+    MYSQL_RES *result = mysql_store_result(con);
     //返回结果集中的列数
     int num_fields = mysql_num_fields(result);
     //返回所有字段结构的数组
@@ -61,9 +78,8 @@ int main(int argc, char *argv[])
     {
         if (users.find(name) == users.end())
         {
-
             pthread_mutex_lock(&lock);
-            int res = mysql_query(mysql, sql_insert);
+            int res = mysql_query(con, sql_insert);
             pthread_mutex_unlock(&lock);
 
             if (!res)
@@ -88,5 +104,35 @@ int main(int argc, char *argv[])
     //释放结果集使用的内存
     mysql_free_result(result);
 
-    connPool->DestroyPool();
+#endif
+
+#ifdef CGISQLPOOL
+    ifstream out(argv[2]);
+    string linestr;
+    while (getline(out, linestr))
+    {
+        string str;
+        stringstream id_passwd(linestr);
+
+        getline(id_passwd, str, ' ');
+        string temp1(str);
+
+        getline(id_passwd, str, ' ');
+        string temp2(str);
+        users[temp1] = temp2;
+    }
+    out.close();
+
+    //只完成登录
+    string name(argv[0]);
+    const char *namep = name.c_str();
+    string passwd(argv[1]);
+    const char *passwdp = passwd.c_str();
+
+    if (users.find(name) != users.end() && users[name] == passwd)
+        printf("1\n");
+    else
+        printf("0\n");
+
+#endif
 }

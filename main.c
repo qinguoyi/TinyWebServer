@@ -20,6 +20,11 @@
 #define MAX_EVENT_NUMBER 10000 //最大事件数
 #define TIMESLOT 5             //最小超时单位
 
+#define SYNSQL          //同步数据库校验
+//#define CGISQLPOOL    //CGI数据库校验
+#define SYNLOG          //同步写日志
+//#define ASYNLOG       //异步写日志
+
 //这三个函数在http_conn.cpp中定义，改变链接属性
 extern int addfd(int epollfd, int fd, bool one_shot);
 extern int remove(int epollfd, int fd);
@@ -67,7 +72,6 @@ void cb_func(client_data *user_data)
     close(user_data->sockfd);
     LOG_INFO("close fd %d", user_data->sockfd);
     Log::get_instance()->flush();
-    //printf( "close fd %d\n", user_data->sockfd );
 }
 
 void show_error(int connfd, const char *info)
@@ -91,15 +95,20 @@ void addfd_(int epollfd, int fd, bool one_shot)
 int main(int argc, char *argv[])
 {
 
-    //Log::get_instance()->init("./mylog.log",8192,2000000,10);//异步日志模型
+#ifdef ASYNLOG
+    Log::get_instance()->init("./mylog.log", 8192, 2000000, 10); //异步日志模型
+#endif
+
+#ifdef SYNLOG
     Log::get_instance()->init("./mylog.log", 8192, 2000000, 0); //同步日志模型
+#endif
 
     if (argc <= 1)
     {
         printf("usage: %s ip_address port_number\n", basename(argv[0]));
         return 1;
     }
-    //const char* ip=argv[1];
+
     int port = atoi(argv[1]);
 
     //忽略SIGPIPE信号
@@ -123,21 +132,28 @@ int main(int argc, char *argv[])
     assert(users);
     int user_count = 0;
 
+#ifdef SYNSQL
     //初始化数据库读取表
     users->initmysql_result(connPool);
+#endif
+
+#ifdef CGISQLPOOL
+    //初始化数据库读取表
+    users->initresultFile(connPool);
+#endif
 
     //创建套接字，返回listenfd
     int listenfd = socket(PF_INET, SOCK_STREAM, 0);
     assert(listenfd >= 0);
-    //struct linger tmp={1,0};
 
+    //struct linger tmp={1,0};
     //SO_LINGER若有数据待发送，延迟关闭
     //setsockopt(listenfd,SOL_SOCKET,SO_LINGER,&tmp,sizeof(tmp));
+
     int ret = 0;
     struct sockaddr_in address;
     bzero(&address, sizeof(address));
     address.sin_family = AF_INET;
-    //inet_pton(AF_INET,ip,&address.sin_addr);
     address.sin_addr.s_addr = htonl(INADDR_ANY);
     address.sin_port = htons(port);
 
@@ -145,7 +161,6 @@ int main(int argc, char *argv[])
     int flag = 1;
     setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
     ret = bind(listenfd, (struct sockaddr *)&address, sizeof(address));
-    //printf("bind ret = %d\n", ret);
     assert(ret >= 0);
     ret = listen(listenfd, 5);
     assert(ret >= 0);
@@ -172,14 +187,11 @@ int main(int argc, char *argv[])
     bool timeout = false;
     alarm(TIMESLOT);
 
-    //printf("监听......\n");
-
     while (!stop_server)
     {
         int number = epoll_wait(epollfd, events, MAX_EVENT_NUMBER, -1);
         if (number < 0 && errno != EINTR)
         {
-            //printf("epoll failure\n");
             LOG_ERROR("%s", "epoll failure");
             break;
         }
@@ -196,7 +208,6 @@ int main(int argc, char *argv[])
                 int connfd = accept(listenfd, (struct sockaddr *)&client_address, &client_addrlength);
                 if (connfd < 0)
                 {
-                    //printf("errno is:%d\n",errno);
                     LOG_ERROR("%s:errno is:%d", "accept error", errno);
                     continue;
                 }
@@ -325,6 +336,6 @@ int main(int argc, char *argv[])
     delete[] users_timer;
     delete pool;
     //销毁数据库连接池
-    //connPool->DestroyPool();
+    connPool->DestroyPool();
     return 0;
 }

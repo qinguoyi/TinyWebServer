@@ -78,6 +78,7 @@ public:
         return &m_address;
     }
     void initmysql_result(connection_pool *connPool);
+    void initresultFile(connection_pool *connPool);
 
 private:
     void init();
@@ -130,4 +131,5 @@ private:
     int bytes_to_send;
     int bytes_have_send;
 };
+
 #endif
