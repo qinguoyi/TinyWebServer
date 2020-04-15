@@ -9,6 +9,9 @@ Linux下C++轻量级Web服务器
 * 实现**同步/异步日志系统**,记录服务器运行状态
 * 经Webbench压力测试可以实现**上万的并发连接**数据交换
 
+模块概述
+----------
+
 > * C/C++
 > * B/S模型
 > * [线程同步机制包装类](https://github.com/qinguoyi/TinyWebServer/tree/master/lock)
@@ -48,7 +51,7 @@ Demo
 <div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/video.gif" height="429"/> </div>
 
 
-测试结果
+压力测试
 -------------
 Webbench对服务器进行压力测试，在ET非阻塞和LT阻塞模式下均可实现上万的并发连接.
 
