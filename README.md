@@ -2,7 +2,13 @@
 
 TinyWebServer
 ===============
-Linux下的简易web服务器，使用线程池 + epoll(ET和LT均实现) + Proactor模式的并发模型，支持解析GET和POST请求；通过访问服务器数据库实现web端用户注册、登录功能，可以请求服务器图片和视频文件；实现同步/异步日志系统,记录服务器运行状态，经压力测试可以实现上万的并发连接数据交换.
+Linux下C++轻量级Web服务器
+
+* 使用**线程池 + epoll(ET和LT均实现) + Proactor模式**的并发模型，支持解析**GET和POST**请求
+* 通过访问服务器数据库实现web端用户**注册、登录**功能，可以请求服务器**图片和视频文件**
+* 实现**同步/异步日志系统**,记录服务器运行状态
+* 经Webbench压力测试可以实现**上万的并发连接**数据交换
+
 > * C/C++
 > * B/S模型
 > * [线程同步机制包装类](https://github.com/qinguoyi/TinyWebServer/tree/master/lock)
@@ -20,6 +26,7 @@ Update
 - [x] 增加请求视频文件的页面
 - [x] 解决数据库同步校验内存泄漏
 - [x] 实现两种CGI数据库访问逻辑
+- [x] 实现ET非阻塞和LT阻塞，并完成压力测试
 
 
 Demo
@@ -44,13 +51,6 @@ Demo
 测试结果
 -------------
 Webbench对服务器进行压力测试，在ET非阻塞和LT阻塞模式下均可实现上万的并发连接.
-> * 并发连接总数：10500
-> * 访问服务器时间：5s
-> * 每秒钟响应请求数：552852 pages/min
-> * 每秒钟传输数据量：1031990 bytes/sec
-> * 所有访问均成功
-
-**注意：** 使用本项目的webbench进行压测时，若报错显示webbench命令找不到，将可执行文件webbench删除后，重新编译即可。
 
 > * ET非阻塞
 
@@ -59,6 +59,13 @@ Webbench对服务器进行压力测试，在ET非阻塞和LT阻塞模式下均�
 > * LT阻塞
 
 <div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/LT.png" height="201"/> </div>
+
+> * 并发连接总数：10500
+> * 访问服务器时间：5s
+> * 所有访问均成功
+
+**注意：** 使用本项目的webbench进行压测时，若报错显示webbench命令找不到，将可执行文件webbench删除后，重新编译即可。
+
 
 框架
 -------------
@@ -229,7 +236,7 @@ web端界面
 	    make CGISQL.cgi
 	    ```
 
-* 选择任一**I/O复用方式*，代码中使用LT阻塞，可以修改为ET非阻塞.
+* 选择任一**I/O复用方式**，代码中使用LT阻塞，可以修改为ET非阻塞.
 
 - [x] LT阻塞
 	* 关闭main.c中ET，打开LT
