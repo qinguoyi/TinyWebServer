@@ -25,6 +25,9 @@
 #define SYNLOG          //同步写日志
 //#define ASYNLOG       //异步写日志
 
+//#define ET            //边缘触发非阻塞
+#define LT              //水平触发阻塞
+
 //这三个函数在http_conn.cpp中定义，改变链接属性
 extern int addfd(int epollfd, int fd, bool one_shot);
 extern int remove(int epollfd, int fd);
@@ -169,8 +172,17 @@ int main(int argc, char *argv[])
     epoll_event events[MAX_EVENT_NUMBER];
     int epollfd = epoll_create(5);
     assert(epollfd != -1);
+
+#ifdef LT
     addfd_(epollfd, listenfd, false);
+#endif
+
+#ifdef ET
+    addfd(epollfd, listenfd, false);
+#endif
+
     http_conn::m_epollfd = epollfd;
+
 
     //创建管道
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
@@ -205,6 +217,7 @@ int main(int argc, char *argv[])
             {
                 struct sockaddr_in client_address;
                 socklen_t client_addrlength = sizeof(client_address);
+#ifdef LT
                 int connfd = accept(listenfd, (struct sockaddr *)&client_address, &client_addrlength);
                 if (connfd < 0)
                 {
@@ -230,6 +243,39 @@ int main(int argc, char *argv[])
                 timer->expire = cur + 3 * TIMESLOT;
                 users_timer[connfd].timer = timer;
                 timer_lst.add_timer(timer);
+#endif
+
+#ifdef ET
+                while (1)
+                {
+                    int connfd = accept(listenfd, (struct sockaddr *)&client_address, &client_addrlength);
+                    if (connfd < 0)
+                    {
+                        LOG_ERROR("%s:errno is:%d", "accept error", errno);
+                        break;
+                    }
+                    if (http_conn::m_user_count >= MAX_FD)
+                    {
+                        show_error(connfd, "Internal server busy");
+                        LOG_ERROR("%s", "Internal server busy");
+                        break;
+                    }
+                    users[connfd].init(connfd, client_address);
+
+                    //初始化client_data数据
+                    //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
+                    users_timer[connfd].address = client_address;
+                    users_timer[connfd].sockfd = connfd;
+                    util_timer *timer = new util_timer;
+                    timer->user_data = &users_timer[connfd];
+                    timer->cb_func = cb_func;
+                    time_t cur = time(NULL);
+                    timer->expire = cur + 3 * TIMESLOT;
+                    users_timer[connfd].timer = timer;
+                    timer_lst.add_timer(timer);
+                }
+                continue;
+#endif
             }
 
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
