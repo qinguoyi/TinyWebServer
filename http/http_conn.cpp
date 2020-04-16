@@ -13,6 +13,9 @@
 //CGI多进程不用连接池
 //#define CGISQL
 
+//#define ET       //边缘触发非阻塞
+#define LT         //水平触发阻塞
+
 //定义http响应的一些状态信息
 const char *ok_200_title = "OK";
 const char *error_400_title = "Bad Request";
@@ -117,7 +120,15 @@ void addfd(int epollfd, int fd, bool one_shot)
 {
     epoll_event event;
     event.data.fd = fd;
+
+#ifdef ET
     event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
+#endif
+
+#ifdef LT
+    event.events = EPOLLIN | EPOLLRDHUP;
+#endif
+
     if (one_shot)
         event.events |= EPOLLONESHOT;
     epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
@@ -136,7 +147,15 @@ void modfd(int epollfd, int fd, int ev)
 {
     epoll_event event;
     event.data.fd = fd;
+
+#ifdef ET
     event.events = ev | EPOLLET | EPOLLONESHOT | EPOLLRDHUP;
+#endif
+
+#ifdef LT
+    event.events = ev | EPOLLONESHOT | EPOLLRDHUP;
+#endif
+
     epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &event);
 }
 

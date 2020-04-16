@@ -2,7 +2,7 @@
 
 TinyWebServer
 ===============
-Linux下C++轻量级Web服务器
+Linux下C++入门级Web服务器，助力初学者快速实践网络编程，搭建属于自己的服务器.
 
 * 使用**线程池 + epoll(ET和LT均实现) + 模拟Proactor模式**并发模型
 * 使用**状态机**解析HTTP请求报文，支持解析**GET和POST**请求
@@ -249,6 +249,13 @@ web端界面
 	    28 //#define ET       //边缘触发非阻塞
 	    29 #define LT         //水平触发阻塞
 	    ```
+	
+	* 关闭http_conn.cpp中ET，打开LT
+	    
+	    ```C++
+	    16 //#define ET       //边缘触发非阻塞
+	    17 #define LT         //水平触发阻塞
+	    ```
 
 - [ ] ET非阻塞
 	* 关闭main.c中LT，打开ET
@@ -256,6 +263,13 @@ web端界面
 	    ```C++
 	    28 #define ET         //边缘触发非阻塞
 	    29 //#define LT       //水平触发阻塞
+	    ```
+
+	* 关闭http_conn.cpp中LT，打开ET
+	    
+	    ```C++
+	    16 #define ET       //边缘触发非阻塞
+	    17 //#define LT         //水平触发阻塞
 	    ```
 
 * 选择任一**日志方式**，代码中使用同步日志，可以修改为异步写入.

@@ -84,17 +84,6 @@ void show_error(int connfd, const char *info)
     close(connfd);
 }
 
-//设置信号为LT阻塞模式
-void addfd_(int epollfd, int fd, bool one_shot)
-{
-    epoll_event event;
-    event.data.fd = fd;
-    event.events = EPOLLIN | EPOLLRDHUP;
-    if (one_shot)
-        event.events |= EPOLLONESHOT;
-    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
-}
-
 int main(int argc, char *argv[])
 {
 
@@ -173,16 +162,8 @@ int main(int argc, char *argv[])
     int epollfd = epoll_create(5);
     assert(epollfd != -1);
 
-#ifdef LT
-    addfd_(epollfd, listenfd, false);
-#endif
-
-#ifdef ET
     addfd(epollfd, listenfd, false);
-#endif
-
     http_conn::m_epollfd = epollfd;
-
 
     //创建管道
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
