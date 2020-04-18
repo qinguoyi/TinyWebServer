@@ -4,13 +4,11 @@
 #include <time.h>
 #include "../log/log.h"
 
-#define BUFFER_SIZE 64
 class util_timer;
 struct client_data
 {
     sockaddr_in address;
     int sockfd;
-    char buf[ BUFFER_SIZE ];
     util_timer* timer;
 };
 
