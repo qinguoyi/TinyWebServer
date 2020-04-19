@@ -20,13 +20,13 @@
 #define MAX_EVENT_NUMBER 10000 //最大事件数
 #define TIMESLOT 5             //最小超时单位
 
-#define SYNSQL          //同步数据库校验
+#define SYNSQL //同步数据库校验
 //#define CGISQLPOOL    //CGI数据库校验
-#define SYNLOG          //同步写日志
+#define SYNLOG //同步写日志
 //#define ASYNLOG       //异步写日志
 
 //#define ET            //边缘触发非阻塞
-#define LT              //水平触发阻塞
+#define LT //水平触发阻塞
 
 //这三个函数在http_conn.cpp中定义，改变链接属性
 extern int addfd(int epollfd, int fd, bool one_shot);
@@ -261,8 +261,6 @@ int main(int argc, char *argv[])
 
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
-                users[sockfd].close_conn();
-
                 //服务器端关闭连接，移除对应的定时器
                 cb_func(&users_timer[sockfd]);
                 util_timer *timer = users_timer[sockfd].timer;
@@ -331,8 +329,6 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    users[sockfd].close_conn();
-
                     cb_func(&users_timer[sockfd]);
                     if (timer)
                     {
@@ -342,10 +338,30 @@ int main(int argc, char *argv[])
             }
             else if (events[i].events & EPOLLOUT)
             {
-
-                if (!users[sockfd].write())
+                util_timer *timer = users_timer[sockfd].timer;
+                if (users[sockfd].write())
                 {
-                    users[sockfd].close_conn();
+                    LOG_INFO("send data to the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
+                    Log::get_instance()->flush();
+
+                    //若有数据传输，则将定时器往后延迟3个单位
+                    //并对新的定时器在链表上的位置进行调整
+                    if (timer)
+                    {
+                        time_t cur = time(NULL);
+                        timer->expire = cur + 3 * TIMESLOT;
+                        LOG_INFO("%s", "adjust timer once");
+                        Log::get_instance()->flush();
+                        timer_lst.adjust_timer(timer);
+                    }
+                }
+                else
+                {
+                    cb_func(&users_timer[sockfd]);
+                    if (timer)
+                    {
+                        timer_lst.del_timer(timer);
+                    }
                 }
             }
         }
