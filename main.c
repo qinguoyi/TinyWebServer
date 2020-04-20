@@ -73,6 +73,7 @@ void cb_func(client_data *user_data)
     epoll_ctl(epollfd, EPOLL_CTL_DEL, user_data->sockfd, 0);
     assert(user_data);
     close(user_data->sockfd);
+    http_conn::m_user_count--;
     LOG_INFO("close fd %d", user_data->sockfd);
     Log::get_instance()->flush();
 }
@@ -159,7 +160,7 @@ int main(int argc, char *argv[])
 
     //创建内核事件表
     epoll_event events[MAX_EVENT_NUMBER];
-    int epollfd = epoll_create(5);
+    epollfd = epoll_create(5);
     assert(epollfd != -1);
 
     addfd(epollfd, listenfd, false);
@@ -177,6 +178,7 @@ int main(int argc, char *argv[])
     bool stop_server = false;
 
     client_data *users_timer = new client_data[MAX_FD];
+
     bool timeout = false;
     alarm(TIMESLOT);
 
@@ -262,8 +264,9 @@ int main(int argc, char *argv[])
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
                 //服务器端关闭连接，移除对应的定时器
-                cb_func(&users_timer[sockfd]);
                 util_timer *timer = users_timer[sockfd].timer;
+                timer->cb_func(&users_timer[sockfd]);
+                
                 if (timer)
                 {
                     timer_lst.del_timer(timer);
@@ -329,7 +332,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    cb_func(&users_timer[sockfd]);
+                    timer->cb_func(&users_timer[sockfd]);
                     if (timer)
                     {
                         timer_lst.del_timer(timer);
@@ -357,7 +360,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    cb_func(&users_timer[sockfd]);
+                    timer->cb_func(&users_timer[sockfd]);
                     if (timer)
                     {
                         timer_lst.del_timer(timer);

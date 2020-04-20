@@ -19,7 +19,7 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
 > * [http连接请求处理类](https://github.com/qinguoyi/TinyWebServer/tree/master/http)
 > * [半同步/半反应堆线程池](https://github.com/qinguoyi/TinyWebServer/tree/master/threadpool)
 > * [定时器处理非活动连接](https://github.com/qinguoyi/TinyWebServer/tree/master/timer)
-> * [同步/异步日志系统 ](https://github.com/qinguoyi/TinyWebServer/tree/master/log)  
+> * [同步/异步日志系统 ](https://github.com/qinguoyi/TinyWebServer/tree/master/log)
 > * [数据库连接池](https://github.com/qinguoyi/TinyWebServer/tree/master/CGImysql) 
 > * [CGI及同步线程注册和登录校验](https://github.com/qinguoyi/TinyWebServer/tree/master/CGImysql) 
 > * [简易服务器压力测试](https://github.com/qinguoyi/TinyWebServer/tree/master/test_presure)
@@ -37,19 +37,19 @@ Demo
 ----------
 > * 注册演示
 
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/registernew.gif" height="429"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0iz0dkleg30m80bxjyj.gif" height="429"/> </div>
 
 > * 登录演示
 
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/loginnew.gif" height="429"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0izcc0r1g30m80bxn6a.gif" height="429"/> </div>
 
 > * 请求图片文件演示(6M)
 
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/picture.gif" height="429"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0izqq8ekg30m80ajqv9.gif" height="429"/> </div>
 
 > * 请求视频文件演示(39M)
 
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/video.gif" height="429"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j0cg5m3g30m80ajnph.gif" height="429"/> </div>
 
 
 压力测试
@@ -58,11 +58,11 @@ Webbench对服务器进行压力测试，在ET非阻塞和LT阻塞模式下均�
 
 > * ET非阻塞
 
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/ET.png" height="201"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j0zgsr6j30fr05l74w.jpg" height="201"/> </div>
 
 > * LT阻塞
 
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/LT.png" height="201"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j0qpch6j30ft05nq3k.jpg" height="201"/> </div>
 
 > * 并发连接总数：10500
 > * 访问服务器时间：5s
@@ -73,7 +73,7 @@ Webbench对服务器进行压力测试，在ET非阻塞和LT阻塞模式下均�
 
 框架
 -------------
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/frame.jpg" height="765"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j1atq5hj30g60lm0w4.jpg" height="765"/> </div>
 
 
 web端界面
@@ -86,9 +86,9 @@ web端界面
 > * 登录失败提示
 
 
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/interface/judge.jpg" height="200"/>         <img src="https://github.com/qinguoyi/TinyWebServer/blob/master/interface/signup.jpg" height="200"/>         <img src="https://github.com/qinguoyi/TinyWebServer/blob/master/interface/signupfail.jpg" height="200"/></div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j1qt5w7j306i06w746.jpg" height="200"/>         <img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j21iwi6j306306i3ye.jpg" height="200"/>         <img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j2b44jgj306v075q2w.jpg" height="200"/></div>
 
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/interface/signin.jpg" height="200"/><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/interface/signinfail.jpg" height="200"/></div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j2r5rnfj306j06ewed.jpg" height="200"/><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j30o0wpj308n07cq2y.jpg" height="200"/></div>
 
 基础测试
 ------------
@@ -302,7 +302,7 @@ web端界面
 > * **带你丰富互联网相关项目经验，轻松应对校招！！！**
 > * **项目模块详细讲解，在公众号内持续更新！！！**
 
-<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/test1.jpg" height="350"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j3jrepyj30ij0cvjt8.jpg" height="350"/> </div>
 
 致谢
 ------------
