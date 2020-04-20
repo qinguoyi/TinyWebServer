@@ -19,7 +19,7 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
 > * [http连接请求处理类](https://github.com/qinguoyi/TinyWebServer/tree/master/http)
 > * [半同步/半反应堆线程池](https://github.com/qinguoyi/TinyWebServer/tree/master/threadpool)
 > * [定时器处理非活动连接](https://github.com/qinguoyi/TinyWebServer/tree/master/timer)
-> * [同步/异步日志系统 ](https://github.com/qinguoyi/TinyWebServer/tree/master/log)
+> * [同步/异步日志系统 ](https://github.com/qinguoyi/TinyWebServer/tree/master/log)  
 > * [数据库连接池](https://github.com/qinguoyi/TinyWebServer/tree/master/CGImysql) 
 > * [CGI及同步线程注册和登录校验](https://github.com/qinguoyi/TinyWebServer/tree/master/CGImysql) 
 > * [简易服务器压力测试](https://github.com/qinguoyi/TinyWebServer/tree/master/test_presure)
@@ -45,11 +45,11 @@ Demo
 
 > * 请求图片文件演示(6M)
 
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0izqq8ekg30m80ajqv9.gif" height="429"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0juxrnlfg30go07x4qr.gif" height="429"/> </div>
 
 > * 请求视频文件演示(39M)
 
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j0cg5m3g30m80ajnph.gif" height="429"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0jtxie8ng30go07xb2b.gif" height="429"/> </div>
 
 
 压力测试
