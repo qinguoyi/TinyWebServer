@@ -770,15 +770,15 @@ bool http_conn::write()
 
         {
             unmap();
+            modfd(m_epollfd, m_sockfd, EPOLLIN);
+
             if (m_linger)
             {
                 init();
-                modfd(m_epollfd, m_sockfd, EPOLLIN);
                 return true;
             }
             else
             {
-                modfd(m_epollfd, m_sockfd, EPOLLIN);
                 return false;
             }
         }
