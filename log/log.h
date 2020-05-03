@@ -7,17 +7,16 @@
 #include <stdarg.h>
 #include <pthread.h>
 #include "block_queue.h"
+
 using namespace std;
 
-static pthread_mutex_t *m_mutex = new pthread_mutex_t; //互斥锁
 class Log
 {
 public:
+    //C++1以后,使用局部变量懒汉不用加锁
     static Log *get_instance()
     {
-        pthread_mutex_lock(m_mutex);
         static Log instance;
-        pthread_mutex_unlock(m_mutex);
         return &instance;
     }
 
@@ -41,9 +40,9 @@ private:
         //从阻塞队列中取出一个日志string，写入文件
         while (m_log_queue->pop(single_log))
         {
-            pthread_mutex_lock(m_mutex);
+            m_mutex.lock();
             fputs(single_log.c_str(), m_fp);
-            pthread_mutex_unlock(m_mutex);
+            m_mutex.unlock();
         }
     }
 
@@ -58,6 +57,7 @@ private:
     char *m_buf;
     block_queue<string> *m_log_queue; //阻塞队列
     bool m_is_async;                  //是否同步标志位
+    locker m_mutex;
 };
 
 //__VA_ARGS__ 是一个可变参数的宏，实现思想就是宏定义中参数列表的最后一个参数为省略号（也就是三个点）

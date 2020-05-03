@@ -87,7 +87,7 @@ void show_error(int connfd, const char *info)
 
 int main(int argc, char *argv[])
 {
-
+    //创建日志
 #ifdef ASYNLOG
     Log::get_instance()->init("./mylog.log", 8192, 2000000, 10); //异步日志模型
 #endif
@@ -108,7 +108,8 @@ int main(int argc, char *argv[])
     addsig(SIGPIPE, SIG_IGN);
 
     //单例模式创建数据库连接池
-    connection_pool *connPool = connection_pool::GetInstance("localhost", "root", "root", "qgydb", 3306, 8);
+    connection_pool *connPool = connection_pool::GetInstance();
+    connPool->init("localhost", "root", "root", "qgydb", 3306, 8);
 
     //创建线程池
     threadpool<http_conn> *pool = NULL;
@@ -123,7 +124,6 @@ int main(int argc, char *argv[])
 
     http_conn *users = new http_conn[MAX_FD];
     assert(users);
-    int user_count = 0;
 
 #ifdef SYNSQL
     //初始化数据库读取表
@@ -381,7 +381,6 @@ int main(int argc, char *argv[])
     delete[] users;
     delete[] users_timer;
     delete pool;
-    //销毁数据库连接池
     connPool->DestroyPool();
     return 0;
 }

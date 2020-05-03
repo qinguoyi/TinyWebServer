@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <sys/time.h>
+#include "../lock/locker.h"
 using namespace std;
 
 template <class T>
@@ -28,101 +29,96 @@ public:
         m_size = 0;
         m_front = -1;
         m_back = -1;
-        //创建互斥锁和条件变量
-        m_mutex = new pthread_mutex_t;
-        m_cond = new pthread_cond_t;
-        pthread_mutex_init(m_mutex, NULL);
-        pthread_cond_init(m_cond, NULL);
     }
 
     void clear()
     {
-        pthread_mutex_lock(m_mutex);
+        m_mutex.lock();
         m_size = 0;
         m_front = -1;
         m_back = -1;
-        pthread_mutex_unlock(m_mutex);
+        m_mutex.unlock();
     }
 
     ~block_queue()
     {
-        pthread_mutex_lock(m_mutex);
+        m_mutex.lock();
         if (m_array != NULL)
             delete m_array;
-        pthread_mutex_unlock(m_mutex);
 
-        pthread_mutex_destroy(m_mutex);
-        pthread_cond_destroy(m_cond);
-
-        delete m_mutex;
-        delete m_cond;
+        m_mutex.unlock();
     }
     //判断队列是否满了
-    bool full() const
+    bool full() 
     {
-        pthread_mutex_lock(m_mutex);
+        m_mutex.lock();
         if (m_size >= m_max_size)
         {
-            pthread_mutex_unlock(m_mutex);
+
+            m_mutex.unlock();
             return true;
         }
-        pthread_mutex_unlock(m_mutex);
+        m_mutex.unlock();
         return false;
     }
     //判断队列是否为空
-    bool empty() const
+    bool empty() 
     {
-        pthread_mutex_lock(m_mutex);
+        m_mutex.lock();
         if (0 == m_size)
         {
-            pthread_mutex_unlock(m_mutex);
+            m_mutex.unlock();
             return true;
         }
-        pthread_mutex_unlock(m_mutex);
+        m_mutex.unlock();
         return false;
     }
     //返回队首元素
-    bool front(T &value) const
+    bool front(T &value) 
     {
-        pthread_mutex_lock(m_mutex);
+        m_mutex.lock();
         if (0 == m_size)
         {
-            pthread_mutex_unlock(m_mutex);
+            m_mutex.unlock();
             return false;
         }
         value = m_array[m_front];
-        pthread_mutex_unlock(m_mutex);
+        m_mutex.unlock();
         return true;
     }
     //返回队尾元素
-    bool back(T &value) const
+    bool back(T &value) 
     {
-        pthread_mutex_lock(m_mutex);
+        m_mutex.lock();
         if (0 == m_size)
         {
-            pthread_mutex_unlock(m_mutex);
+            m_mutex.unlock();
             return false;
         }
         value = m_array[m_back];
-        pthread_mutex_unlock(m_mutex);
+        m_mutex.unlock();
         return true;
     }
 
-    int size() const
+    int size() 
     {
         int tmp = 0;
-        pthread_mutex_lock(m_mutex);
+
+        m_mutex.lock();
         tmp = m_size;
-        pthread_mutex_unlock(m_mutex);
+
+        m_mutex.unlock();
         return tmp;
     }
 
-    int max_size() const
+    int max_size()
     {
         int tmp = 0;
-        pthread_mutex_lock(m_mutex);
+
+        m_mutex.lock();
         tmp = m_max_size;
-        pthread_mutex_unlock(m_mutex);
+
+        m_mutex.unlock();
         return tmp;
     }
     //往队列添加元素，需要将所有使用队列的线程先唤醒
@@ -130,11 +126,13 @@ public:
     //若当前没有线程等待条件变量,则唤醒无意义
     bool push(const T &item)
     {
-        pthread_mutex_lock(m_mutex);
+
+        m_mutex.lock();
         if (m_size >= m_max_size)
         {
-            pthread_cond_broadcast(m_cond);
-            pthread_mutex_unlock(m_mutex);
+
+            m_cond.broadcast();
+            m_mutex.unlock();
             return false;
         }
 
@@ -142,21 +140,22 @@ public:
         m_array[m_back] = item;
 
         m_size++;
-        pthread_cond_broadcast(m_cond);
-        pthread_mutex_unlock(m_mutex);
 
+        m_cond.broadcast();
+        m_mutex.unlock();
         return true;
     }
     //pop时,如果当前队列没有元素,将会等待条件变量
     bool pop(T &item)
     {
-        pthread_mutex_lock(m_mutex);
+
+        m_mutex.lock();
         while (m_size <= 0)
         {
-            //
-            if (0 != pthread_cond_wait(m_cond, m_mutex))
+            
+            if (!m_cond.wait(m_mutex.get()))
             {
-                pthread_mutex_unlock(m_mutex);
+                m_mutex.unlock();
                 return false;
             }
         }
@@ -164,7 +163,7 @@ public:
         m_front = (m_front + 1) % m_max_size;
         item = m_array[m_front];
         m_size--;
-        pthread_mutex_unlock(m_mutex);
+        m_mutex.unlock();
         return true;
     }
 
@@ -174,34 +173,35 @@ public:
         struct timespec t = {0, 0};
         struct timeval now = {0, 0};
         gettimeofday(&now, NULL);
-        pthread_mutex_lock(m_mutex);
+        m_mutex.lock();
         if (m_size <= 0)
         {
             t.tv_sec = now.tv_sec + ms_timeout / 1000;
             t.tv_nsec = (ms_timeout % 1000) * 1000;
-            if (0 != pthread_cond_timedwait(m_cond, m_mutex, &t))
+            if (!m_cond.timewait(m_mutex.get(), t))
             {
-                pthread_mutex_unlock(m_mutex);
+                m_mutex.unlock();
                 return false;
             }
         }
 
         if (m_size <= 0)
         {
-            pthread_mutex_unlock(m_mutex);
+            m_mutex.unlock();
             return false;
         }
 
         m_front = (m_front + 1) % m_max_size;
         item = m_array[m_front];
         m_size--;
-        pthread_mutex_unlock(m_mutex);
+        m_mutex.unlock();
         return true;
     }
 
 private:
-    pthread_mutex_t *m_mutex;
-    pthread_cond_t *m_cond;
+    locker m_mutex;
+    cond m_cond;
+
     T *m_array;
     int m_size;
     int m_max_size;

@@ -16,8 +16,7 @@ int main(int argc, char *argv[])
 {
     map<string, string> users;
 
-    pthread_mutex_t lock;
-    pthread_mutex_init(&lock, NULL);
+    locker lock;
 
 #ifdef CGISQL
 
@@ -78,9 +77,9 @@ int main(int argc, char *argv[])
     {
         if (users.find(name) == users.end())
         {
-            pthread_mutex_lock(&lock);
+            lock.lock();
             int res = mysql_query(con, sql_insert);
-            pthread_mutex_unlock(&lock);
+            lock.unlock();
 
             if (!res)
                 printf("1\n");
