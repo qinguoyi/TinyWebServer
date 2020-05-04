@@ -39,7 +39,6 @@ private:
 	list<MYSQL *> connList; //连接池
 	sem reserve;
 
-
 private:
 	string url;			 //主机地址
 	string Port;		 //数据库端口号

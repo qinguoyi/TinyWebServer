@@ -13,6 +13,7 @@ using namespace std;
 connection_pool::connection_pool()
 {
 	this->CurConn = 0;
+	this->FreeConn = 0;
 }
 
 connection_pool *connection_pool::GetInstance()
@@ -51,9 +52,10 @@ void connection_pool::init(string url, string User, string PassWord, string DBNa
 		connList.push_back(con);
 		++FreeConn;
 	}
-	reserve = sem(FreeConn);
 
-	this->MaxConn = MaxConn;
+	reserve = sem(FreeConn);
+	
+	this->MaxConn = FreeConn;
 	
 	lock.unlock();
 }
@@ -94,7 +96,7 @@ bool connection_pool::ReleaseConnection(MYSQL *con)
 	--CurConn;
 
 	lock.unlock();
-	
+
 	reserve.post();
 	return true;
 }
