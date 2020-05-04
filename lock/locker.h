@@ -15,6 +15,13 @@ public:
             throw std::exception();
         }
     }
+    sem(int num)
+    {
+        if (sem_init(&m_sem, 0, num) != 0)
+        {
+            throw std::exception();
+        }
+    }
     ~sem()
     {
         sem_destroy(&m_sem);

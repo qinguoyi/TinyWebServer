@@ -36,7 +36,6 @@ private:
 
 private:
 	locker lock;
-
 	list<MYSQL *> connList; //连接池
 	sem reserve;
 

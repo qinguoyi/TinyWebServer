@@ -51,10 +51,10 @@ void connection_pool::init(string url, string User, string PassWord, string DBNa
 		connList.push_back(con);
 		++FreeConn;
 	}
+	reserve = sem(FreeConn);
 
 	this->MaxConn = MaxConn;
 	
-
 	lock.unlock();
 }
 
@@ -67,11 +67,8 @@ MYSQL *connection_pool::GetConnection()
 	if (0 == connList.size())
 		return NULL;
 
-	if (0 == FreeConn)
-	{
-		reserve.wait();
-	}
-
+	reserve.wait();
+	
 	lock.lock();
 
 	con = connList.front();
@@ -90,19 +87,6 @@ bool connection_pool::ReleaseConnection(MYSQL *con)
 	if (NULL == con)
 		return false;
 
-	if (0 == FreeConn)
-	{
-		lock.lock();
-
-		connList.push_back(con);
-		++FreeConn;
-		--CurConn;
-
-		lock.unlock();
-		reserve.post();
-		return true;
-	}
-
 	lock.lock();
 
 	connList.push_back(con);
@@ -110,7 +94,8 @@ bool connection_pool::ReleaseConnection(MYSQL *con)
 	--CurConn;
 
 	lock.unlock();
-
+	
+	reserve.post();
 	return true;
 }
 
