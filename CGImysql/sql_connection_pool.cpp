@@ -63,37 +63,37 @@ void connection_pool::init(string url, string User, string PassWord, string DBNa
 MYSQL *connection_pool::GetConnection()
 {
 	MYSQL *con = NULL;
-	
-	lock.lock();
-	//reserve.wait();
-	if (connList.size() > 0)
-	{
-		con = connList.front();
-		connList.pop_front();
 
-		--FreeConn;
-		++CurConn;
+	if (0 == connList.size())
+		return NULL;
 
-		
-		lock.unlock();
-		return con;
-	}
-	else
+	if (0 == FreeConn)
 	{
 		reserve.wait();
 	}
-	
+
+	lock.lock();
+
+	con = connList.front();
+	connList.pop_front();
+
+	--FreeConn;
+	++CurConn;
 
 	lock.unlock();
-	return NULL;
+	return con;
 }
 
 //释放当前使用的连接
 bool connection_pool::ReleaseConnection(MYSQL *con)
 {
-	lock.lock();
-	if (con != NULL)
+	if (NULL == con)
+		return false;
+
+	if (0 == FreeConn)
 	{
+		lock.lock();
+
 		connList.push_back(con);
 		++FreeConn;
 		--CurConn;
@@ -103,8 +103,15 @@ bool connection_pool::ReleaseConnection(MYSQL *con)
 		return true;
 	}
 
+	lock.lock();
+
+	connList.push_back(con);
+	++FreeConn;
+	--CurConn;
+
 	lock.unlock();
-	return false;
+
+	return true;
 }
 
 //销毁数据库连接池
