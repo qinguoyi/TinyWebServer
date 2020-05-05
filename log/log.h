@@ -60,11 +60,10 @@ private:
     locker m_mutex;
 };
 
-//__VA_ARGS__ 是一个可变参数的宏，实现思想就是宏定义中参数列表的最后一个参数为省略号（也就是三个点）
 
-#define LOG_DEBUG(format, ...) Log::get_instance()->write_log(0, format, __VA_ARGS__)
-#define LOG_INFO(format, ...) Log::get_instance()->write_log(1, format, __VA_ARGS__)
-#define LOG_WARN(format, ...) Log::get_instance()->write_log(2, format, __VA_ARGS__)
-#define LOG_ERROR(format, ...) Log::get_instance()->write_log(3, format, __VA_ARGS__)
+#define LOG_DEBUG(format, ...) Log::get_instance()->write_log(0, format, ##__VA_ARGS__)
+#define LOG_INFO(format, ...) Log::get_instance()->write_log(1, format, ##__VA_ARGS__)
+#define LOG_WARN(format, ...) Log::get_instance()->write_log(2, format, ##__VA_ARGS__)
+#define LOG_ERROR(format, ...) Log::get_instance()->write_log(3, format, ##__VA_ARGS__)
 
 #endif

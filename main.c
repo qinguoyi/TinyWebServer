@@ -87,13 +87,13 @@ void show_error(int connfd, const char *info)
 
 int main(int argc, char *argv[])
 {
-    //创建日志
+
 #ifdef ASYNLOG
-    Log::get_instance()->init("./mylog.log", 8192, 2000000, 10); //异步日志模型
+    Log::get_instance()->init("ServerLog", 2000, 800000, 8); //异步日志模型
 #endif
 
 #ifdef SYNLOG
-    Log::get_instance()->init("./mylog.log", 8192, 2000000, 0); //同步日志模型
+    Log::get_instance()->init("ServerLog", 2000, 800000, 0); //同步日志模型
 #endif
 
     if (argc <= 1)
@@ -104,10 +104,9 @@ int main(int argc, char *argv[])
 
     int port = atoi(argv[1]);
 
-    //忽略SIGPIPE信号
     addsig(SIGPIPE, SIG_IGN);
 
-    //单例模式创建数据库连接池
+    //创建数据库连接池
     connection_pool *connPool = connection_pool::GetInstance();
     connPool->init("localhost", "root", "root", "qgydb", 3306, 8);
 
@@ -135,7 +134,7 @@ int main(int argc, char *argv[])
     users->initresultFile(connPool);
 #endif
 
-    //创建套接字，返回listenfd
+ 
     int listenfd = socket(PF_INET, SOCK_STREAM, 0);
     assert(listenfd >= 0);
 
@@ -150,7 +149,7 @@ int main(int argc, char *argv[])
     address.sin_addr.s_addr = htonl(INADDR_ANY);
     address.sin_port = htons(port);
 
-    // 设置端口复用，绑定端口
+
     int flag = 1;
     setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
     ret = bind(listenfd, (struct sockaddr *)&address, sizeof(address));
@@ -172,7 +171,6 @@ int main(int argc, char *argv[])
     setnonblocking(pipefd[1]);
     addfd(epollfd, pipefd[0], false);
 
-    // add all the interesting signals here
     addsig(SIGALRM, sig_handler, false);
     addsig(SIGTERM, sig_handler, false);
     bool stop_server = false;
@@ -281,7 +279,6 @@ int main(int argc, char *argv[])
                 ret = recv(pipefd[0], signals, sizeof(signals), 0);
                 if (ret == -1)
                 {
-                    // handle the error
                     continue;
                 }
                 else if (ret == 0)
