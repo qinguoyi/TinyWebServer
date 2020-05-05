@@ -378,6 +378,5 @@ int main(int argc, char *argv[])
     delete[] users;
     delete[] users_timer;
     delete pool;
-    connPool->DestroyPool();
     return 0;
 }

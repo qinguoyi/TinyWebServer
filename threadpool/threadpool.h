@@ -99,9 +99,10 @@ void threadpool<T>::run()
         m_queuelocker.unlock();
         if (!request)
             continue;
-        request->mysql = m_connPool->GetConnection();
+
+        connectionRAII mysqlcon(&request->mysql, m_connPool);
+        
         request->process();
-        m_connPool->ReleaseConnection(request->mysql);
     }
 }
 #endif

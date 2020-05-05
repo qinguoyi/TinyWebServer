@@ -54,7 +54,7 @@ void connection_pool::init(string url, string User, string PassWord, string DBNa
 	}
 
 	reserve = sem(FreeConn);
-	
+
 	this->MaxConn = FreeConn;
 	
 	lock.unlock();
@@ -133,4 +133,15 @@ int connection_pool::GetFreeConn()
 connection_pool::~connection_pool()
 {
 	DestroyPool();
+}
+
+connectionRAII::connectionRAII(MYSQL **SQL, connection_pool *connPool){
+	*SQL = connPool->GetConnection();
+	
+	conRAII = *SQL;
+	poolRAII = connPool;
+}
+
+connectionRAII::~connectionRAII(){
+	poolRAII->ReleaseConnection(conRAII);
 }

@@ -38,7 +38,8 @@ map<string, string> users;
 void http_conn::initmysql_result(connection_pool *connPool)
 {
     //先从连接池中取一个连接
-    MYSQL *mysql = connPool->GetConnection();
+    MYSQL *mysql = NULL;
+    connectionRAII mysqlcon(&mysql, connPool);
 
     //在user表中检索username，passwd数据，浏览器端输入
     if (mysql_query(mysql, "SELECT username,passwd FROM user"))
@@ -62,8 +63,6 @@ void http_conn::initmysql_result(connection_pool *connPool)
         string temp2(row[1]);
         users[temp1] = temp2;
     }
-    //将连接归还连接池
-    connPool->ReleaseConnection(mysql);
 }
 
 #endif
@@ -74,7 +73,8 @@ void http_conn::initresultFile(connection_pool *connPool)
 {
     ofstream out("./CGImysql/id_passwd.txt");
     //先从连接池中取一个连接
-    MYSQL *mysql = connPool->GetConnection();
+    MYSQL *mysql = NULL;
+    connectionRAII mysqlcon(&mysql, connPool);
 
     //在user表中检索username，passwd数据，浏览器端输入
     if (mysql_query(mysql, "SELECT username,passwd FROM user"))
@@ -99,8 +99,7 @@ void http_conn::initresultFile(connection_pool *connPool)
         out << temp1 << " " << temp2 << endl;
         users[temp1] = temp2;
     }
-    //将连接归还连接池
-    connPool->ReleaseConnection(mysql);
+
     out.close();
 }
 
