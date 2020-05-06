@@ -44,7 +44,7 @@ public:
     {
         m_mutex.lock();
         if (m_array != NULL)
-            delete m_array;
+            delete [] m_array;
 
         m_mutex.unlock();
     }
