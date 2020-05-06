@@ -57,7 +57,7 @@ bool Log::init(const char *file_name, int log_buf_size, int split_lines, int max
     }
 
     m_today = my_tm.tm_mday;
-
+    printf("%s\n", log_full_name);
     m_fp = fopen(log_full_name, "a");
     if (m_fp == NULL)
     {

@@ -81,8 +81,8 @@ int main(int argc, char *argv[])
     }
 
     //生成日志
-    if (0 == LOGWrite)
-        Log::get_instance()->init("./ServerLog", 2000, 800000, 8);
+    if (1 == LOGWrite)
+        Log::get_instance()->init("./ServerLog", 2000, 800000, 800);
     else
         Log::get_instance()->init("./ServerLog", 2000, 800000, 0);
 

@@ -6,7 +6,7 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
 
 * 使用**线程池 + epoll(ET和LT均实现) + 模拟Proactor模式**的并发模型
 * 使用**状态机**解析HTTP请求报文，支持解析**GET和POST**请求
-* 访问服务器数据库实现web端用户**注册、登录**功能，实现请求服务器**图片和视频文件**
+* 访问服务器数据库实现web端用户**注册、登录**功能，可以请求服务器**图片和视频文件**
 * 实现**同步/异步日志系统**，记录服务器运行状态
 * 经Webbench压力测试可以实现**上万的并发连接**数据交换
 
@@ -36,7 +36,7 @@ Update
 - [x] 优化数据库连接池信号量与代码结构
 - [x] 使用RAII机制优化数据库连接的获取与释放
 - [x] 优化代码结构，封装工具类以减少全局变量
-- [x] 一次编译，命令行个性化测试更加友好
+- [x] 编译一次即可，命令行进行个性化测试更加友好
 
 
 基础测试
@@ -166,18 +166,18 @@ Demo
 
 压力测试
 -------------
-Webbench对服务器进行压力测试，在ET非阻塞和LT阻塞模式下均可实现上万的并发连接.
+Webbench对服务器进行压力测试，在ET非阻塞和LT阻塞模式下均可实现上万的并发连接. 这里以同步日志，不使用优雅关闭连接为例.
 
-> * ET非阻塞
+> * ET非阻塞，18657 QPS
 
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j0zgsr6j30fr05l74w.jpg" height="201"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1gejjt9plmfj30fm05fgnt.jpg" height="201"/> </div>
 
-> * LT阻塞
+> * LT阻塞，22868 QPS
 
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j0qpch6j30ft05nq3k.jpg" height="201"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1gejjtn0judj30fj05htay.jpg" height="201"/> </div>
 
 > * 并发连接总数：10500
-> * 访问服务器时间：5s
+> * 访问服务器时间：10s
 > * 所有访问均成功
 
 **注意：** 使用本项目的webbench进行压测时，若报错显示webbench命令找不到，将可执行文件webbench删除后，重新编译即可。
