@@ -39,63 +39,6 @@ Update
 - [x] 一次编译，命令行个性化测试更加友好
 
 
-Demo
-----------
-> * 注册演示
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0iz0dkleg30m80bxjyj.gif" height="429"/> </div>
-
-> * 登录演示
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0izcc0r1g30m80bxn6a.gif" height="429"/> </div>
-
-> * 请求图片文件演示(6M)
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0juxrnlfg30go07x4qr.gif" height="429"/> </div>
-
-> * 请求视频文件演示(39M)
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0jtxie8ng30go07xb2b.gif" height="429"/> </div>
-
-
-压力测试
--------------
-Webbench对服务器进行压力测试，在ET非阻塞和LT阻塞模式下均可实现上万的并发连接.
-
-> * ET非阻塞
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j0zgsr6j30fr05l74w.jpg" height="201"/> </div>
-
-> * LT阻塞
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j0qpch6j30ft05nq3k.jpg" height="201"/> </div>
-
-> * 并发连接总数：10500
-> * 访问服务器时间：5s
-> * 所有访问均成功
-
-**注意：** 使用本项目的webbench进行压测时，若报错显示webbench命令找不到，将可执行文件webbench删除后，重新编译即可。
-
-
-框架
--------------
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j1atq5hj30g60lm0w4.jpg" height="765"/> </div>
-
-
-web端界面
--------------
-
-> * 判断是否注册   
-> * 注册
-> * 注册失败提示
-> * 登录
-> * 登录失败提示
-
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j1qt5w7j306i06w746.jpg" height="200"/>         <img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j21iwi6j306306i3ye.jpg" height="200"/>         <img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j2b44jgj306v075q2w.jpg" height="200"/></div>
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j2r5rnfj306j06ewed.jpg" height="200"/><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j30o0wpj308n07cq2y.jpg" height="200"/></div>
-
 基础测试
 ------------
 * 服务器测试环境
@@ -200,6 +143,65 @@ web端界面
 - [x] 异步写入日志
 - [x] 使用LT水平触发
 - [x] 使用优雅关闭连接
+
+
+Demo
+----------
+> * 注册演示
+
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0iz0dkleg30m80bxjyj.gif" height="429"/> </div>
+
+> * 登录演示
+
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0izcc0r1g30m80bxn6a.gif" height="429"/> </div>
+
+> * 请求图片文件演示(6M)
+
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0juxrnlfg30go07x4qr.gif" height="429"/> </div>
+
+> * 请求视频文件演示(39M)
+
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0jtxie8ng30go07xb2b.gif" height="429"/> </div>
+
+
+压力测试
+-------------
+Webbench对服务器进行压力测试，在ET非阻塞和LT阻塞模式下均可实现上万的并发连接.
+
+> * ET非阻塞
+
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j0zgsr6j30fr05l74w.jpg" height="201"/> </div>
+
+> * LT阻塞
+
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j0qpch6j30ft05nq3k.jpg" height="201"/> </div>
+
+> * 并发连接总数：10500
+> * 访问服务器时间：5s
+> * 所有访问均成功
+
+**注意：** 使用本项目的webbench进行压测时，若报错显示webbench命令找不到，将可执行文件webbench删除后，重新编译即可。
+
+
+框架
+-------------
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j1atq5hj30g60lm0w4.jpg" height="765"/> </div>
+
+
+web端界面
+-------------
+
+> * 判断是否注册   
+> * 注册
+> * 注册失败提示
+> * 登录
+> * 登录失败提示
+
+
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j1qt5w7j306i06w746.jpg" height="200"/>         <img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j21iwi6j306306i3ye.jpg" height="200"/>         <img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j2b44jgj306v075q2w.jpg" height="200"/></div>
+
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j2r5rnfj306j06ewed.jpg" height="200"/><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j30o0wpj308n07cq2y.jpg" height="200"/></div>
+
 
 反馈
 ------------
