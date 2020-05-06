@@ -2,9 +2,14 @@
 #define LST_TIMER
 
 #include <time.h>
+#include "../http/http_conn.h"
 #include "../log/log.h"
 
+//#define ET       //边缘触发非阻塞
+#define LT         //水平触发阻塞
+
 class util_timer;
+
 struct client_data
 {
     sockaddr_in address;
@@ -19,7 +24,8 @@ public:
 
 public:
     time_t expire;
-    void (*cb_func)(client_data *);
+    
+    void (* cb_func)(client_data *);
     client_data *user_data;
     util_timer *prev;
     util_timer *next;
@@ -175,4 +181,92 @@ private:
     util_timer *tail;
 };
 
+class Utils
+{
+public:
+    Utils() {}
+    ~Utils() {}
+
+    void init(sort_timer_lst timer_lst, int timeslot){
+        m_timer_lst = timer_lst;
+        m_TIMESLOT = timeslot;
+    }
+
+    //对文件描述符设置非阻塞
+    int setnonblocking(int fd)
+    {
+        int old_option = fcntl(fd, F_GETFL);
+        int new_option = old_option | O_NONBLOCK;
+        fcntl(fd, F_SETFL, new_option);
+        return old_option;
+    }
+
+    //将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT
+    void addfd(int epollfd, int fd, bool one_shot, int TRIGMode)
+    {
+        epoll_event event;
+        event.data.fd = fd;
+
+        if (1 == TRIGMode)
+            event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
+        else
+            event.events = EPOLLIN | EPOLLRDHUP;
+
+        if (one_shot)
+            event.events |= EPOLLONESHOT;
+        epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
+        setnonblocking(fd);
+    }
+
+    //信号处理函数
+    static void sig_handler(int sig)
+    {
+        //为保证函数的可重入性，保留原来的errno
+        int save_errno = errno;
+        int msg = sig;
+        send(m_pipefd[1], (char *)&msg, 1, 0);
+        errno = save_errno;
+    }
+
+    //设置信号函数
+    void addsig(int sig, void(handler)(int), bool restart = true)
+    {
+        struct sigaction sa;
+        memset(&sa, '\0', sizeof(sa));
+        sa.sa_handler = handler;
+        if (restart)
+            sa.sa_flags |= SA_RESTART;
+        sigfillset(&sa.sa_mask);
+        assert(sigaction(sig, &sa, NULL) != -1);
+    }
+
+    //定时处理任务，重新定时以不断触发SIGALRM信号
+    void timer_handler()
+    {
+        m_timer_lst.tick();
+        alarm(m_TIMESLOT);
+    }
+
+    void show_error(int connfd, const char *info)
+    {
+        send(connfd, info, strlen(info), 0);
+        close(connfd);
+    }
+
+public:
+    static int *m_pipefd;
+    sort_timer_lst m_timer_lst;
+    static int m_epollfd;
+    int m_TIMESLOT;
+};
+class Utils;
+void cb_func(client_data *user_data)
+{
+    epoll_ctl(Utils::m_epollfd, EPOLL_CTL_DEL, user_data->sockfd, 0);
+    assert(user_data);
+    close(user_data->sockfd);
+    http_conn::m_user_count--;
+    LOG_INFO("close fd %d", user_data->sockfd);
+    Log::get_instance()->flush();
+}
 #endif

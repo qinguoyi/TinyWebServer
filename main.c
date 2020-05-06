@@ -16,95 +16,75 @@
 #include "./log/log.h"
 #include "./CGImysql/sql_connection_pool.h"
 
-#define MAX_FD 65536           //最大文件描述符
-#define MAX_EVENT_NUMBER 10000 //最大事件数
-#define TIMESLOT 5             //最小超时单位
+const int MAX_FD = 65536;           //最大文件描述符
+const int MAX_EVENT_NUMBER = 10000; //最大事件数
+const int TIMESLOT = 5;             //最小超时单位
 
-#define SYNSQL //同步数据库校验
-//#define CGISQLPOOL    //CGI数据库校验
-#define SYNLOG //同步写日志
-//#define ASYNLOG       //异步写日志
-
-//#define ET            //边缘触发非阻塞
-#define LT //水平触发阻塞
-
-//这三个函数在http_conn.cpp中定义，改变链接属性
-extern int addfd(int epollfd, int fd, bool one_shot);
-extern int remove(int epollfd, int fd);
-extern int setnonblocking(int fd);
-
-//设置定时器相关参数
+//定时器相关参数
 static int pipefd[2];
-static sort_timer_lst timer_lst;
+sort_timer_lst timer_lst;
 static int epollfd = 0;
-
-//信号处理函数
-void sig_handler(int sig)
-{
-    //为保证函数的可重入性，保留原来的errno
-    int save_errno = errno;
-    int msg = sig;
-    send(pipefd[1], (char *)&msg, 1, 0);
-    errno = save_errno;
-}
-
-//设置信号函数
-void addsig(int sig, void(handler)(int), bool restart = true)
-{
-    struct sigaction sa;
-    memset(&sa, '\0', sizeof(sa));
-    sa.sa_handler = handler;
-    if (restart)
-        sa.sa_flags |= SA_RESTART;
-    sigfillset(&sa.sa_mask);
-    assert(sigaction(sig, &sa, NULL) != -1);
-}
-
-//定时处理任务，重新定时以不断触发SIGALRM信号
-void timer_handler()
-{
-    timer_lst.tick();
-    alarm(TIMESLOT);
-}
-
-//定时器回调函数，删除非活动连接在socket上的注册事件，并关闭
-void cb_func(client_data *user_data)
-{
-    epoll_ctl(epollfd, EPOLL_CTL_DEL, user_data->sockfd, 0);
-    assert(user_data);
-    close(user_data->sockfd);
-    http_conn::m_user_count--;
-    LOG_INFO("close fd %d", user_data->sockfd);
-    Log::get_instance()->flush();
-}
-
-void show_error(int connfd, const char *info)
-{
-    printf("%s", info);
-    send(connfd, info, strlen(info), 0);
-    close(connfd);
-}
+int *Utils::m_pipefd = pipefd;
+int Utils::m_epollfd = epollfd;
 
 int main(int argc, char *argv[])
 {
+    //端口号,默认9006
+    int port = 9006;
 
-#ifdef ASYNLOG
-    Log::get_instance()->init("ServerLog", 2000, 800000, 8); //异步日志模型
-#endif
+    //数据库校验方式，默认同步
+    int SQLVerify = 0;
 
-#ifdef SYNLOG
-    Log::get_instance()->init("ServerLog", 2000, 800000, 0); //同步日志模型
-#endif
+    //日志写入方式，默认同步
+    int LOGWrite = 0;
 
-    if (argc <= 1)
+    //触发模式，默认LT
+    int TRIGMode = 0;
+
+    //优雅关闭链接，默认不使用
+    int OPT_LINGER = 0;
+
+    int opt;
+    const char *str = "p:s:l:t:o";
+    while ((opt = getopt(argc, argv, str)) != -1)
     {
-        printf("usage: %s ip_address port_number\n", basename(argv[0]));
-        return 1;
+        switch (opt)
+        {
+        case 'p':
+        {
+            port = atoi(optarg);
+            break;
+        }
+        case 's':
+        {
+            SQLVerify = atoi(optarg);
+            break;
+        }
+        case 'l':
+        {
+            LOGWrite = atoi(optarg);
+            break;
+        }
+        case 't':
+        {
+            TRIGMode = atoi(optarg);
+            break;
+        }
+        case 'o':
+        {
+            OPT_LINGER = atoi(optarg);
+            break;
+        }
+        default:
+            break;
+        }
     }
 
-    int port = atoi(argv[1]);
-
-    addsig(SIGPIPE, SIG_IGN);
+    //生成日志
+    if (0 == LOGWrite)
+        Log::get_instance()->init("./ServerLog", 2000, 800000, 8);
+    else
+        Log::get_instance()->init("./ServerLog", 2000, 800000, 0);
 
     //创建数据库连接池
     connection_pool *connPool = connection_pool::GetInstance();
@@ -124,23 +104,37 @@ int main(int argc, char *argv[])
     http_conn *users = new http_conn[MAX_FD];
     assert(users);
 
-#ifdef SYNSQL
     //初始化数据库读取表
-    users->initmysql_result(connPool);
-#endif
+    map<string, string> users_passwd;
 
-#ifdef CGISQLPOOL
-    //初始化数据库读取表
-    users->initresultFile(connPool);
-#endif
+    if (0 == SQLVerify)
+        users->initmysql_result(connPool, users_passwd);
+    else if (1 == SQLVerify)
+        users->initresultFile(connPool, users_passwd);
 
- 
+    //root文件夹路径
+    char server_path[200];
+    getcwd(server_path, 200);
+    char root[6] = "/root";
+    char *m_root = (char *)malloc(strlen(server_path) + strlen(root) + 1);
+    strcpy(m_root, server_path);
+    strcat(m_root, root);
+
+    //网络编程基础步骤
     int listenfd = socket(PF_INET, SOCK_STREAM, 0);
     assert(listenfd >= 0);
 
-    //struct linger tmp={1,0};
-    //SO_LINGER若有数据待发送，延迟关闭
-    //setsockopt(listenfd,SOL_SOCKET,SO_LINGER,&tmp,sizeof(tmp));
+    //优雅关闭连接
+    if (0 == OPT_LINGER)
+    {
+        struct linger tmp = {0, 1};
+        setsockopt(listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
+    }
+    else if (1 == OPT_LINGER)
+    {
+        struct linger tmp = {1, 1};
+        setsockopt(listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
+    }
 
     int ret = 0;
     struct sockaddr_in address;
@@ -149,7 +143,6 @@ int main(int argc, char *argv[])
     address.sin_addr.s_addr = htonl(INADDR_ANY);
     address.sin_port = htons(port);
 
-
     int flag = 1;
     setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
     ret = bind(listenfd, (struct sockaddr *)&address, sizeof(address));
@@ -157,29 +150,34 @@ int main(int argc, char *argv[])
     ret = listen(listenfd, 5);
     assert(ret >= 0);
 
-    //创建内核事件表
+    //工具类,信号和描述符基础操作
+    Utils utils;
+    utils.init(timer_lst, TIMESLOT);
+
+    //epoll创建内核事件表
     epoll_event events[MAX_EVENT_NUMBER];
     epollfd = epoll_create(5);
     assert(epollfd != -1);
 
-    addfd(epollfd, listenfd, false);
+    utils.addfd(epollfd, listenfd, false, TRIGMode);
     http_conn::m_epollfd = epollfd;
 
-    //创建管道
+    //定时器相关
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
     assert(ret != -1);
-    setnonblocking(pipefd[1]);
-    addfd(epollfd, pipefd[0], false);
+    utils.setnonblocking(pipefd[1]);
+    utils.addfd(epollfd, pipefd[0], false, TRIGMode);
 
-    addsig(SIGALRM, sig_handler, false);
-    addsig(SIGTERM, sig_handler, false);
+    utils.addsig(SIGPIPE, SIG_IGN);
+    utils.addsig(SIGALRM, utils.sig_handler, false);
+    utils.addsig(SIGTERM, utils.sig_handler, false);
+
     bool stop_server = false;
-
-    client_data *users_timer = new client_data[MAX_FD];
-
     bool timeout = false;
     alarm(TIMESLOT);
+    client_data *users_timer = new client_data[MAX_FD];
 
+    //主循环
     while (!stop_server)
     {
         int number = epoll_wait(epollfd, events, MAX_EVENT_NUMBER, -1);
@@ -198,50 +196,21 @@ int main(int argc, char *argv[])
             {
                 struct sockaddr_in client_address;
                 socklen_t client_addrlength = sizeof(client_address);
-#ifdef LT
-                int connfd = accept(listenfd, (struct sockaddr *)&client_address, &client_addrlength);
-                if (connfd < 0)
-                {
-                    LOG_ERROR("%s:errno is:%d", "accept error", errno);
-                    continue;
-                }
-                if (http_conn::m_user_count >= MAX_FD)
-                {
-                    show_error(connfd, "Internal server busy");
-                    LOG_ERROR("%s", "Internal server busy");
-                    continue;
-                }
-                users[connfd].init(connfd, client_address);
-
-                //初始化client_data数据
-                //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
-                users_timer[connfd].address = client_address;
-                users_timer[connfd].sockfd = connfd;
-                util_timer *timer = new util_timer;
-                timer->user_data = &users_timer[connfd];
-                timer->cb_func = cb_func;
-                time_t cur = time(NULL);
-                timer->expire = cur + 3 * TIMESLOT;
-                users_timer[connfd].timer = timer;
-                timer_lst.add_timer(timer);
-#endif
-
-#ifdef ET
-                while (1)
+                if (0 == TRIGMode)
                 {
                     int connfd = accept(listenfd, (struct sockaddr *)&client_address, &client_addrlength);
                     if (connfd < 0)
                     {
                         LOG_ERROR("%s:errno is:%d", "accept error", errno);
-                        break;
+                        continue;
                     }
                     if (http_conn::m_user_count >= MAX_FD)
                     {
-                        show_error(connfd, "Internal server busy");
+                        utils.show_error(connfd, "Internal server busy");
                         LOG_ERROR("%s", "Internal server busy");
-                        break;
+                        continue;
                     }
-                    users[connfd].init(connfd, client_address);
+                    users[connfd].init(connfd, client_address, m_root, users_passwd, SQLVerify, TRIGMode);
 
                     //初始化client_data数据
                     //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
@@ -255,8 +224,38 @@ int main(int argc, char *argv[])
                     users_timer[connfd].timer = timer;
                     timer_lst.add_timer(timer);
                 }
-                continue;
-#endif
+                else
+                {
+                    while (1)
+                    {
+                        int connfd = accept(listenfd, (struct sockaddr *)&client_address, &client_addrlength);
+                        if (connfd < 0)
+                        {
+                            LOG_ERROR("%s:errno is:%d", "accept error", errno);
+                            break;
+                        }
+                        if (http_conn::m_user_count >= MAX_FD)
+                        {
+                            utils.show_error(connfd, "Internal server busy");
+                            LOG_ERROR("%s", "Internal server busy");
+                            break;
+                        }
+                        users[connfd].init(connfd, client_address, m_root, users_passwd, SQLVerify, TRIGMode);
+
+                        //初始化client_data数据
+                        //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
+                        users_timer[connfd].address = client_address;
+                        users_timer[connfd].sockfd = connfd;
+                        util_timer *timer = new util_timer;
+                        timer->user_data = &users_timer[connfd];
+                        timer->cb_func = cb_func;
+                        time_t cur = time(NULL);
+                        timer->expire = cur + 3 * TIMESLOT;
+                        users_timer[connfd].timer = timer;
+                        timer_lst.add_timer(timer);
+                    }
+                    continue;
+                }
             }
 
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
@@ -264,7 +263,7 @@ int main(int argc, char *argv[])
                 //服务器端关闭连接，移除对应的定时器
                 util_timer *timer = users_timer[sockfd].timer;
                 timer->cb_func(&users_timer[sockfd]);
-                
+
                 if (timer)
                 {
                     timer_lst.del_timer(timer);
@@ -367,7 +366,7 @@ int main(int argc, char *argv[])
         }
         if (timeout)
         {
-            timer_handler();
+            utils.timer_handler();
             timeout = false;
         }
     }

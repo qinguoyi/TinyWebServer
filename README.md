@@ -6,7 +6,7 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
 
 * 使用**线程池 + epoll(ET和LT均实现) + 模拟Proactor模式**的并发模型
 * 使用**状态机**解析HTTP请求报文，支持解析**GET和POST**请求
-* 通过访问服务器数据库实现web端用户**注册、登录**功能，可以请求服务器**图片和视频文件**
+* 访问服务器数据库实现web端用户**注册、登录**功能，实现请求服务器**图片和视频文件**
 * 实现**同步/异步日志系统**，记录服务器运行状态
 * 经Webbench压力测试可以实现**上万的并发连接**数据交换
 
@@ -35,7 +35,8 @@ Update
 - [x] 改进代码结构，更新局部变量懒汉单例模式
 - [x] 优化数据库连接池信号量与代码结构
 - [x] 使用RAII机制优化数据库连接的获取与释放
-
+- [x] 优化代码结构，封装工具类以减少全局变量
+- [x] 一次编译，命令行个性化测试更加友好
 
 
 Demo
@@ -131,13 +132,6 @@ web端界面
     connPool->init("localhost", "root", "root", "qgydb", 3306, 8);
     ```
 
-* 修改http_conn.cpp中的root路径
-
-    ```C++
-	// 修改为root文件夹所在路径
-    const char* doc_root="/home/qgy/TinyWebServer/root";
-    ```
-
 * 生成server
 
     ```C++
@@ -147,163 +141,65 @@ web端界面
 * 启动server
 
     ```C++
-    ./server port
+    ./server
     ```
 
 * 浏览器端
 
     ```C++
-    ip:port
+    ip:9006
     ```
 
 个性化测试
 ------
 
-> * 校验方式，代码中使用同步校验，可以修改为CGI.
+```C++
+./server [-p port] [-s SQLVerify] [-l LOGWrite] [-t TRIGMode] [-o OPT_LINGER]
+```
 
-- [x] 同步线程数据库校验
-	* 关闭main.c中CGISQLPOOL，打开SYNSQL
+* -p，自定义端口号
+	* 默认9006
+* -s，选择数据库校验方式，默认同步校验
+	* 0，同步校验，使用连接池
+	* 1，CGI校验，使用连接池
+	* 2，CGI校验，不使用连接池
+* -l，选择日志写入方式，默认同步写入
+	* 0，同步写入
+	* 1，异步写入
+* -t epoll的触发模式，默认使用LT
+	* 0，表示使用LT
+	* 1，表示使用ET
+* -o 优雅关闭连接，默认不使用
+	* 0，不使用
+	* 1，使用
 
-	   ```C++
-		23 #define SYNSQL    //同步数据库校验
-		24 //#define CGISQLPOOL  //CGI数据库校验
-	    ```
+若使用CGI数据库校验方式，按如下编译代码.
 
-	* 关闭http_conn.cpp中两种CGI，打开SYNSQL
-	    
-	    ```C++
-		7 //同步校验
-		8 #define SYNSQL
+* 修改sign.cpp中的数据库初始化信息
 
-		10 //CGI多进程使用链接池
-		11 //#define CGISQLPOOL
+    ```C++
+    // root root修改为服务器数据库的登录名和密码
+	// qgydb修改为上述创建的yourdb库名
+    con = mysql_real_connect(con, "localhost", "root", "root", "qgydb", 3306, NULL, 0);
+    ```
 
-		13 //CGI多进程不用连接池
-		14 //#define CGISQL
-	    ```
+* 生成CGISQL.cgi
 
-- [ ] CGI多进程数据库校验，不使用连接池
-	* 关闭main.c中SYNSQL和CGISQLPOOL
+    ```C++
+    make CGISQL.cgi
+    ```
 
-	   ```C++
-		23 //#define SYNSQL    //同步数据库校验
-		24 //#define CGISQLPOOL  //CGI数据库校验
-	    ```
+> * 个性化测试示例
 
-	* 关闭http_conn.cpp中SYNSQL和CGISQLPOOL，打开CGISQL
-	    
-	    ```C++
-		7 //同步校验
-		8 //#define SYNSQL
+```C++
+./server -p 9007 -s 1 -l 1 -t 0 -o 1
+```
 
-		10 //CGI多进程使用链接池
-		11 //#define CGISQLPOOL
-
-		13 //CGI多进程不用连接池
-		14 #define CGISQL
-	    ```
-	
-	* 关闭sign.cpp中的CGISQLPOOL，打开CGISQL
-
-	    ```C++
-	    12 #define CGISQL    //不使用连接池
-		13 //#define CGISQLPOOL  //使用连接池
-	    ```
-	* 修改sign.cpp中的数据库初始化信息
-
-	    ```C++
-	    //root root为服务器数据库的登录名和密码
-	    connection_pool *connPool=connection_pool::GetInstance("localhost","root","root","yourdb",3306,5);
-	    ```
-	* 生成CGISQL.cgi
-
-	    ```C++
-	    make CGISQL.cgi
-	    ```
-
-- [ ] CGI多进程数据库校验，使用连接池
-	* 关闭main.c中SYNSQL，打开CGISQLPOOL
-
-	   ```C++
-		23 //#define SYNSQL    //同步数据库校验
-		24 #define CGISQLPOOL  //CGI数据库校验
-	    ```
-
-	* 关闭http_conn.cpp中SYNSQL和CGISQL，打开CGISQLPOOL
-	    
-	    ```C++
-		7 //同步校验
-		8 //#define SYNSQL
-
-		10 //CGI多进程使用链接池
-		11 #define CGISQLPOOL
-
-		13 //CGI多进程不用连接池
-		14 //#define CGISQL
-	    ```
-	* 关闭sign.cpp中的CGISQL，打开CGISQLPOOL
-
-	    ```C++
-	    12 //#define CGISQL    //不使用连接池
-		13 #define CGISQLPOOL  //使用连接池
-	    ```
-	* 生成CGISQL.cgi
-
-	    ```C++
-	    make CGISQL.cgi
-	    ```
-
-
-> * I/O复用方式，代码中使用LT阻塞，可以修改为ET非阻塞.
-
-- [x] LT阻塞
-	* 关闭main.c中ET，打开LT
-	    
-	    ```C++
-	    28 //#define ET       //边缘触发非阻塞
-	    29 #define LT         //水平触发阻塞
-	    ```
-	
-	* 关闭http_conn.cpp中ET，打开LT
-	    
-	    ```C++
-	    16 //#define ET       //边缘触发非阻塞
-	    17 #define LT         //水平触发阻塞
-	    ```
-
-- [ ] ET非阻塞
-	* 关闭main.c中LT，打开ET
-	    
-	    ```C++
-	    28 #define ET         //边缘触发非阻塞
-	    29 //#define LT       //水平触发阻塞
-	    ```
-
-	* 关闭http_conn.cpp中LT，打开ET
-	    
-	    ```C++
-	    16 #define ET       //边缘触发非阻塞
-	    17 //#define LT         //水平触发阻塞
-	    ```
-
-> * 日志写入方式，代码中使用同步日志，可以修改为异步写入.
-
-- [x] 同步写入日志
-	* 关闭main.c中ASYNLOG，打开同步写入SYNLOG
-	    
-	    ```C++
-	    25 #define SYNLOG //同步写日志
-	    26 //#define ASYNLOG   /异步写日志
-	    ```
-
-- [ ] 异步写入日志
-	* 关闭main.c中SYNLOG，打开异步写入ASYNLOG
-	    
-	    ```C++
-	    25 //#define SYNLOG //同步写日志
-	    26 #define ASYNLOG   /异步写日志
-	    ```
-* 选择数据库访问、I/O复用方式或日志写入方式后，按照前述生成server，启动server，即可进行测试.
+- [x] 端口9007
+- [x] 同步数据库校验，使用连接池
+- [x] 异步写入日志
+- [x] 使用LT水平触发
+- [x] 使用优雅关闭连接
 
 反馈
 ------------

@@ -1,41 +1,9 @@
 #include "http_conn.h"
 #include "../log/log.h"
-#include <map>
 #include <mysql/mysql.h>
 #include <fstream>
 
-//同步校验
-#define SYNSQL
-
-//CGI多进程使用链接池
-//#define CGISQLPOOL
-
-//CGI多进程不用连接池
-//#define CGISQL
-
-//#define ET       //边缘触发非阻塞
-#define LT         //水平触发阻塞
-
-//定义http响应的一些状态信息
-const char *ok_200_title = "OK";
-const char *error_400_title = "Bad Request";
-const char *error_400_form = "Your request has bad syntax or is inherently impossible to staisfy.\n";
-const char *error_403_title = "Forbidden";
-const char *error_403_form = "You do not have permission to get file form this server.\n";
-const char *error_404_title = "Not Found";
-const char *error_404_form = "The requested file was not found on this server.\n";
-const char *error_500_title = "Internal Error";
-const char *error_500_form = "There was an unusual problem serving the request file.\n";
-
-//当浏览器出现连接重置时，可能是网站根目录出错或http响应格式出错或者访问的文件中内容完全为空
-const char *doc_root = "/home/qgy/github/TinyWebServer/root";
-
-//将表中的用户名和密码放入map
-map<string, string> users;
-
-#ifdef SYNSQL
-
-void http_conn::initmysql_result(connection_pool *connPool)
+void http_conn::initmysql_result(connection_pool *connPool, map<string, string> &users)
 {
     //先从连接池中取一个连接
     MYSQL *mysql = NULL;
@@ -65,11 +33,7 @@ void http_conn::initmysql_result(connection_pool *connPool)
     }
 }
 
-#endif
-
-#ifdef CGISQLPOOL
-
-void http_conn::initresultFile(connection_pool *connPool)
+void http_conn::initresultFile(connection_pool *connPool, map<string, string> &users)
 {
     ofstream out("./CGImysql/id_passwd.txt");
     //先从连接池中取一个连接
@@ -103,8 +67,6 @@ void http_conn::initresultFile(connection_pool *connPool)
     out.close();
 }
 
-#endif
-
 //对文件描述符设置非阻塞
 int setnonblocking(int fd)
 {
@@ -115,18 +77,15 @@ int setnonblocking(int fd)
 }
 
 //将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT
-void addfd(int epollfd, int fd, bool one_shot)
+void addfd(int epollfd, int fd, bool one_shot, int TRIGMode)
 {
     epoll_event event;
     event.data.fd = fd;
 
-#ifdef ET
-    event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
-#endif
-
-#ifdef LT
-    event.events = EPOLLIN | EPOLLRDHUP;
-#endif
+    if (1 == TRIGMode)
+        event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
+    else
+        event.events = EPOLLIN | EPOLLRDHUP;
 
     if (one_shot)
         event.events |= EPOLLONESHOT;
@@ -142,18 +101,15 @@ void removefd(int epollfd, int fd)
 }
 
 //将事件重置为EPOLLONESHOT
-void modfd(int epollfd, int fd, int ev)
+void modfd(int epollfd, int fd, int ev, int TRIGMode)
 {
     epoll_event event;
     event.data.fd = fd;
 
-#ifdef ET
-    event.events = ev | EPOLLET | EPOLLONESHOT | EPOLLRDHUP;
-#endif
-
-#ifdef LT
-    event.events = ev | EPOLLONESHOT | EPOLLRDHUP;
-#endif
+    if (1 == TRIGMode)
+        event.events = ev | EPOLLET | EPOLLONESHOT | EPOLLRDHUP;
+    else
+        event.events = ev | EPOLLONESHOT | EPOLLRDHUP;
 
     epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &event);
 }
@@ -173,14 +129,20 @@ void http_conn::close_conn(bool real_close)
 }
 
 //初始化连接,外部调用初始化套接字地址
-void http_conn::init(int sockfd, const sockaddr_in &addr)
+void http_conn::init(int sockfd, const sockaddr_in &addr, char *root, map<string, string> &users, int SQLVerify, int TRIGMode)
 {
     m_sockfd = sockfd;
     m_address = addr;
-    //int reuse=1;
-    //setsockopt(m_sockfd,SOL_SOCKET,SO_REUSEADDR,&reuse,sizeof(reuse));
-    addfd(m_epollfd, sockfd, true);
+
+    addfd(m_epollfd, sockfd, true, m_TRIGMode);
     m_user_count++;
+
+    //当浏览器出现连接重置时，可能是网站根目录出错或http响应格式出错或者访问的文件中内容完全为空
+    doc_root = root;
+    m_users = users;
+    m_SQLVerify = SQLVerify;
+    m_TRIGMode = TRIGMode;
+
     init();
 }
 
@@ -203,6 +165,18 @@ void http_conn::init()
     m_read_idx = 0;
     m_write_idx = 0;
     cgi = 0;
+
+    //定义http响应的一些状态信息
+    ok_200_title = "OK";
+    error_400_title = "Bad Request";
+    error_400_form = "Your request has bad syntax or is inherently impossible to staisfy.\n";
+    error_403_title = "Forbidden";
+    error_403_form = "You do not have permission to get file form this server.\n";
+    error_404_title = "Not Found";
+    error_404_form = "The requested file was not found on this server.\n";
+    error_500_title = "Internal Error";
+    error_500_form = "There was an unusual problem serving the request file.\n";
+
     memset(m_read_buf, '\0', READ_BUFFER_SIZE);
     memset(m_write_buf, '\0', WRITE_BUFFER_SIZE);
     memset(m_real_file, '\0', FILENAME_LEN);
@@ -453,96 +427,148 @@ http_conn::HTTP_CODE http_conn::do_request()
             password[j] = m_string[i];
         password[j] = '\0';
 
-//同步线程登录校验
-#ifdef SYNSQL
-        pthread_mutex_t lock;
-        pthread_mutex_init(&lock, NULL);
-
-        if (*(p + 1) == '3')
+        if (0 == m_SQLVerify)
         {
-            //如果是注册，先检测数据库中是否有重名的
-            //没有重名的，进行增加数据
-            char *sql_insert = (char *)malloc(sizeof(char) * 200);
-            strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
-            strcat(sql_insert, "'");
-            strcat(sql_insert, name);
-            strcat(sql_insert, "', '");
-            strcat(sql_insert, password);
-            strcat(sql_insert, "')");
+            pthread_mutex_t lock;
+            pthread_mutex_init(&lock, NULL);
 
-            if (users.find(name) == users.end())
+            if (*(p + 1) == '3')
             {
+                //如果是注册，先检测数据库中是否有重名的
+                //没有重名的，进行增加数据
+                char *sql_insert = (char *)malloc(sizeof(char) * 200);
+                strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
+                strcat(sql_insert, "'");
+                strcat(sql_insert, name);
+                strcat(sql_insert, "', '");
+                strcat(sql_insert, password);
+                strcat(sql_insert, "')");
 
-                pthread_mutex_lock(&lock);
-                int res = mysql_query(mysql, sql_insert);
-                users.insert(pair<string, string>(name, password));
-                pthread_mutex_unlock(&lock);
-
-                if (!res)
-                    strcpy(m_url, "/log.html");
-                else
-                    strcpy(m_url, "/registerError.html");
-            }
-            else
-                strcpy(m_url, "/registerError.html");
-        }
-        //如果是登录，直接判断
-        //若浏览器端输入的用户名和密码在表中可以查找到，返回1，否则返回0
-        else if (*(p + 1) == '2')
-        {
-            if (users.find(name) != users.end() && users[name] == password)
-                strcpy(m_url, "/welcome.html");
-            else
-                strcpy(m_url, "/logError.html");
-        }
-#endif
-
-
-//CGI用连接池,注册在父进程,登录在子进程
-#ifdef CGISQLPOOL
-
-        //注册
-        pthread_mutex_t lock;
-        pthread_mutex_init(&lock, NULL);
-
-        if (*(p + 1) == '3')
-        {
-            //如果是注册，先检测数据库中是否有重名的
-            //没有重名的，进行增加数据
-            char *sql_insert = (char *)malloc(sizeof(char) * 200);
-            strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
-            strcat(sql_insert, "'");
-            strcat(sql_insert, name);
-            strcat(sql_insert, "', '");
-            strcat(sql_insert, password);
-            strcat(sql_insert, "')");
-
-            if (users.find(name) == users.end())
-            {
-                pthread_mutex_lock(&lock);
-                int res = mysql_query(mysql, sql_insert);
-                users.insert(pair<string, string>(name, password));
-                pthread_mutex_unlock(&lock);
-
-                if (!res)
+                if (m_users.find(name) == m_users.end())
                 {
-                    strcpy(m_url, "/log.html");
+
                     pthread_mutex_lock(&lock);
-                    //每次都需要重新更新id_passwd.txt
-                    ofstream out("./CGImysql/id_passwd.txt", ios::app);
-                    out << name << " " << password << endl;
-                    out.close();
+                    int res = mysql_query(mysql, sql_insert);
+                    m_users.insert(pair<string, string>(name, password));
                     pthread_mutex_unlock(&lock);
+
+                    if (!res)
+                        strcpy(m_url, "/log.html");
+                    else
+                        strcpy(m_url, "/registerError.html");
                 }
                 else
                     strcpy(m_url, "/registerError.html");
             }
-            else
-                strcpy(m_url, "/registerError.html");
+            //如果是登录，直接判断
+            //若浏览器端输入的用户名和密码在表中可以查找到，返回1，否则返回0
+            else if (*(p + 1) == '2')
+            {
+                if (m_users.find(name) != m_users.end() && m_users[name] == password)
+                    strcpy(m_url, "/welcome.html");
+                else
+                    strcpy(m_url, "/logError.html");
+            }
         }
-        //登录
-        else if (*(p + 1) == '2')
+        else if (1 == m_SQLVerify)
         {
+
+            //注册
+            pthread_mutex_t lock;
+            pthread_mutex_init(&lock, NULL);
+
+            if (*(p + 1) == '3')
+            {
+                //如果是注册，先检测数据库中是否有重名的
+                //没有重名的，进行增加数据
+                char *sql_insert = (char *)malloc(sizeof(char) * 200);
+                strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
+                strcat(sql_insert, "'");
+                strcat(sql_insert, name);
+                strcat(sql_insert, "', '");
+                strcat(sql_insert, password);
+                strcat(sql_insert, "')");
+
+                if (m_users.find(name) == m_users.end())
+                {
+                    pthread_mutex_lock(&lock);
+                    int res = mysql_query(mysql, sql_insert);
+                    m_users.insert(pair<string, string>(name, password));
+                    pthread_mutex_unlock(&lock);
+
+                    if (!res)
+                    {
+                        strcpy(m_url, "/log.html");
+                        pthread_mutex_lock(&lock);
+                        //每次都需要重新更新id_passwd.txt
+                        ofstream out("./CGImysql/id_passwd.txt", ios::app);
+                        out << name << " " << password << endl;
+                        out.close();
+                        pthread_mutex_unlock(&lock);
+                    }
+                    else
+                        strcpy(m_url, "/registerError.html");
+                }
+                else
+                    strcpy(m_url, "/registerError.html");
+            }
+            //登录
+            else if (*(p + 1) == '2')
+            {
+                pid_t pid;
+                int pipefd[2];
+                if (pipe(pipefd) < 0)
+                {
+                    LOG_ERROR("pipe() error:%d", 4);
+                    return BAD_REQUEST;
+                }
+                if ((pid = fork()) < 0)
+                {
+                    LOG_ERROR("fork() error:%d", 3);
+                    return BAD_REQUEST;
+                }
+
+                if (pid == 0)
+                {
+                    //标准输出，文件描述符是1，然后将输出重定向到管道写端
+                    dup2(pipefd[1], 1);
+                    //关闭管道的读端
+                    close(pipefd[0]);
+                    //父进程去执行cgi程序，m_real_file,name,password为输入
+                    execl(m_real_file, name, password,  "./CGImysql/id_passwd.txt","1", NULL);
+                }
+                else
+                {
+                    //子进程关闭写端，打开读端，读取父进程的输出
+                    close(pipefd[1]);
+                    char result;
+                    int ret = read(pipefd[0], &result, 1);
+
+                    if (ret != 1)
+                    {
+                        LOG_ERROR("管道read error:ret=%d", ret);
+                        return BAD_REQUEST;
+                    }
+
+                    LOG_INFO("%s", "登录检测");
+                    Log::get_instance()->flush();
+                    //当用户名和密码正确，则显示welcome界面，否则显示错误界面
+                    if (result == '1')
+                        strcpy(m_url, "/welcome.html");
+                    else
+                        strcpy(m_url, "/logError.html");
+
+                    //回收进程资源
+                    waitpid(pid, NULL, 0);
+                }
+            }
+        }
+
+        //CGI多进程登录校验,不用数据库连接池
+        //子进程完成注册和登录
+        else
+        {
+            //fd[0]:读管道，fd[1]:写管道
             pid_t pid;
             int pipefd[2];
             if (pipe(pipefd) < 0)
@@ -563,7 +589,8 @@ http_conn::HTTP_CODE http_conn::do_request()
                 //关闭管道的读端
                 close(pipefd[0]);
                 //父进程去执行cgi程序，m_real_file,name,password为输入
-                execl(m_real_file, name, password, "./CGImysql/id_passwd.txt", NULL);
+                //./check.cgi name password
+                execl(m_real_file, &flag, name, password, "2",NULL);
             }
             else
             {
@@ -577,86 +604,31 @@ http_conn::HTTP_CODE http_conn::do_request()
                     LOG_ERROR("管道read error:ret=%d", ret);
                     return BAD_REQUEST;
                 }
-
-                LOG_INFO("%s", "登录检测");
-                Log::get_instance()->flush();
-                //当用户名和密码正确，则显示welcome界面，否则显示错误界面
-                if (result == '1')
-                    strcpy(m_url, "/welcome.html");
-                else
-                    strcpy(m_url, "/logError.html");
-
+                if (flag == '2')
+                {
+                    //printf("登录检测\n");
+                    LOG_INFO("%s", "登录检测");
+                    Log::get_instance()->flush();
+                    //当用户名和密码正确，则显示welcome界面，否则显示错误界面
+                    if (result == '1')
+                        strcpy(m_url, "/welcome.html");
+                    else
+                        strcpy(m_url, "/logError.html");
+                }
+                else if (flag == '3')
+                {
+                    LOG_INFO("%s", "注册检测");
+                    Log::get_instance()->flush();
+                    //当成功注册后，则显示登陆界面，否则显示错误界面
+                    if (result == '1')
+                        strcpy(m_url, "/log.html");
+                    else
+                        strcpy(m_url, "/registerError.html");
+                }
                 //回收进程资源
                 waitpid(pid, NULL, 0);
             }
         }
-
-#endif
-
-//CGI多进程登录校验,不用数据库连接池
-//子进程完成注册和登录
-#ifdef CGISQL
-        //fd[0]:读管道，fd[1]:写管道
-        pid_t pid;
-        int pipefd[2];
-        if (pipe(pipefd) < 0)
-        {
-            LOG_ERROR("pipe() error:%d", 4);
-            return BAD_REQUEST;
-        }
-        if ((pid = fork()) < 0)
-        {
-            LOG_ERROR("fork() error:%d", 3);
-            return BAD_REQUEST;
-        }
-
-        if (pid == 0)
-        {
-            //标准输出，文件描述符是1，然后将输出重定向到管道写端
-            dup2(pipefd[1],1);
-            //关闭管道的读端
-            close(pipefd[0]);
-            //父进程去执行cgi程序，m_real_file,name,password为输入
-            //./check.cgi name password
-            execl(m_real_file, &flag, name,password,NULL);
-        }
-        else
-        {
-            //子进程关闭写端，打开读端，读取父进程的输出
-            close(pipefd[1]);
-            char result;
-            int ret = read(pipefd[0], &result, 1);
-
-            if (ret != 1)
-            {
-                LOG_ERROR("管道read error:ret=%d", ret);
-                return BAD_REQUEST;
-            }
-            if (flag == '2')
-            {
-                //printf("登录检测\n");
-                LOG_INFO("%s", "登录检测");
-                Log::get_instance()->flush();
-                //当用户名和密码正确，则显示welcome界面，否则显示错误界面
-                if (result == '1')
-                    strcpy(m_url, "/welcome.html");
-                else
-                    strcpy(m_url, "/logError.html");
-            }
-            else if (flag == '3')
-            {
-                LOG_INFO("%s", "注册检测");
-                Log::get_instance()->flush();
-                //当成功注册后，则显示登陆界面，否则显示错误界面
-                if (result == '1')
-                    strcpy(m_url, "/log.html");
-                else
-                    strcpy(m_url, "/registerError.html");
-            }
-            //回收进程资源
-            waitpid(pid, NULL, 0);
-        }
-#endif
     }
 
     if (*(p + 1) == '0')
@@ -729,7 +701,7 @@ bool http_conn::write()
 
     if (bytes_to_send == 0)
     {
-        modfd(m_epollfd, m_sockfd, EPOLLIN);
+        modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
         init();
         return true;
     }
@@ -758,7 +730,7 @@ bool http_conn::write()
                     m_iv[0].iov_base = m_write_buf + bytes_to_send;
                     m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
                 }
-                modfd(m_epollfd, m_sockfd, EPOLLOUT);
+                modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
                 return true;
             }
             unmap();
@@ -769,7 +741,7 @@ bool http_conn::write()
 
         {
             unmap();
-            modfd(m_epollfd, m_sockfd, EPOLLIN);
+            modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
 
             if (m_linger)
             {
@@ -807,8 +779,7 @@ bool http_conn::add_status_line(int status, const char *title)
 }
 bool http_conn::add_headers(int content_len)
 {
-    add_content_length(content_len);
-    add_linger();
+    return add_content_length(content_len) && add_linger() && 
     add_blank_line();
 }
 bool http_conn::add_content_length(int content_len)
@@ -895,7 +866,7 @@ void http_conn::process()
     HTTP_CODE read_ret = process_read();
     if (read_ret == NO_REQUEST)
     {
-        modfd(m_epollfd, m_sockfd, EPOLLIN);
+        modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
         return;
     }
     bool write_ret = process_write(read_ret);
@@ -903,5 +874,5 @@ void http_conn::process()
     {
         close_conn();
     }
-    modfd(m_epollfd, m_sockfd, EPOLLOUT);
+    modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
 }
