@@ -14,7 +14,7 @@ Download
 -------
 代码下载经常失败，访问太慢，无需科学上网，与Github最新提交同步.
 
-* 下载地址 : [BaidUYun](https://pan.baidu.com/s/1f9dkc5t-joh_D40wif4_6g)
+* 下载地址 : [BaiduYun](https://pan.baidu.com/s/1f9dkc5t-joh_D40wif4_6g)
 * 提取码 : pybt
 
 模块概述
@@ -139,7 +139,7 @@ Update
     make CGISQL.cgi
     ```
 
-* 测试示例命令与含义
+测试示例命令与含义
 
 ```C++
 ./server -p 9007 -s 1 -l 1 -t 0 -o 1
