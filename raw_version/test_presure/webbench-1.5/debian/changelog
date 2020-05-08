@@ -1,0 +1,56 @@
+webbench (1.5) unstable; urgency=low
+
+  * allow building with both Gnu and BSD make
+
+ -- Radim Kolar <hsn@home>  Fri, Jun 25 12:00:20 CEST 2004
+
+webbench (1.4) unstable; urgency=low
+
+  * check if url is not too long
+  * report correct program version number
+  * use yield() when waiting for test start
+  * corrected error codes
+  * check availability of test server first
+  * do not abort test if first request failed
+  * report when some childrens are dead.
+  * use alarm, not time() for lower syscal use by bench
+  * use mode 644 for installed doc
+  * makefile cleaned for better freebsd ports integration
+
+ -- Radim Kolar <hsn@home>  Thu, 15 Jan 2004 11:15:52 +0100
+
+webbench (1.3) unstable; urgency=low
+
+  * Build fixes for freeBSD
+  * Default benchmark time 60 -> 30
+  * generate tar with subdirectory
+  * added to freeBSD ports collection
+
+ -- Radim Kolar <hsn@home>  Mon, 12 Jan 2004 17:00:24 +0100
+
+webbench (1.2) unstable; urgency=low
+
+  * Only debian-related bugfixes
+  * Updated Debian/rules
+  * Adapted to fit new directory system
+  * moved from debstd to dh_*
+
+ -- Radim Kolar <hsn@home>  Fri, 18 Jan 2002 12:33:04 +0100
+
+webbench (1.1) unstable; urgency=medium
+ 
+  * Program debianized
+  * added support for multiple methods (GET, HEAD, OPTIONS, TRACE)
+  * added support for multiple HTTP versions (0.9 -- 1.1)
+  * added long options
+  * added multiple clients
+  * wait for start of second before test
+  * test time can be specified
+  * better error checking when reading reply from server
+  * FIX: tests was one second longer than expected
+
+ -- Radim Kolar <hsn@home>  Thu, 16 Sep 1999 18:48:00 +0200
+
+Local variables:
+mode: debian-changelog
+End:

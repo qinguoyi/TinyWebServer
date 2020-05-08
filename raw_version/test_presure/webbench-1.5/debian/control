@@ -1,0 +1,14 @@
+Source: webbench
+Section: web
+Priority: extra
+Maintainer: Radim Kolar <hsn@cybermail.net>
+Build-Depends: debhelper (>> 3.0.0)
+Standards-Version: 3.5.2
+
+Package: webbench
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Simple forking Web benchmark
+ webbench is very simple program for benchmarking WWW or Proxy servers.
+ Uses fork() for simulating multiple clients load. Can use HTTP 0.9 - 1.1
+ requests, but Keep-Alive connections are not supported.

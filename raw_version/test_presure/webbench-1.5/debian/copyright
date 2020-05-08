@@ -1,0 +1,6 @@
+Webbench was written by Radim Kolar 1997-2004 (hsn@netmag.cz).
+
+UNIX sockets code (socket.c) taken from popclient 1.5 4/1/94 
+public domain code, created by Virginia Tech Computing Center.
+
+Copyright: GPL (see /usr/share/common-licenses/GPL)

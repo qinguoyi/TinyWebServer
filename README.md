@@ -14,7 +14,8 @@ Download
 -------
 代码下载经常失败，访问太慢，无需科学上网，与Github最新提交同步.
 
-* 下载地址 : [BaiduYun](https://pan.baidu.com/s/1f9dkc5t-joh_D40wif4_6g)
+* 重构版本下载地址 : soon
+* raw_version下载地址 : [BaiduYun](https://pan.baidu.com/s/1f9dkc5t-joh_D40wif4_6g)
 * 提取码 : pybt
 
 模块概述
@@ -44,6 +45,7 @@ Update
 - [x] 使用RAII机制优化数据库连接的获取与释放
 - [x] 优化代码结构，封装工具类以减少全局变量
 - [x] 编译一次即可，命令行进行个性化测试更加友好
+- [x] main函数封装重构
 
 
 基础测试
@@ -77,9 +79,10 @@ Update
 * 修改main.c中的数据库初始化信息
 
     ```C++
-    // root root修改为服务器数据库的登录名和密码
-	// qgydb修改为上述创建的yourdb库名
-    connPool->init("localhost", "root", "root", "qgydb", 3306, 8);
+    //数据库登录名,密码,库名
+    string user = "root";
+    string passwd = "root";
+    string databasename = "qgydb";
     ```
 
 * 生成server
@@ -104,24 +107,30 @@ Update
 ------
 
 ```C++
-./server [-p port] [-s SQLVerify] [-l LOGWrite] [-t TRIGMode] [-o OPT_LINGER]
+./server [-p port] [-v SQLVerify] [-l LOGWrite] [-m TRIGMode] [-o OPT_LINGER] [-s sql_num] [-t thread_num]
 ```
+
+温馨提示:以上参数不是非必须，不用全部使用，根据个人情况搭配选用即可.
 
 * -p，自定义端口号
 	* 默认9006
-* -s，选择数据库校验方式，默认同步校验
+* -v，选择数据库校验方式，默认同步校验
 	* 0，同步校验，使用连接池
 	* 1，CGI校验，使用连接池
 	* 2，CGI校验，不使用连接池
 * -l，选择日志写入方式，默认同步写入
 	* 0，同步写入
 	* 1，异步写入
-* -t，epoll的触发模式，默认使用LT
+* -m，epoll的触发模式，默认使用LT
 	* 0，表示使用LT
 	* 1，表示使用ET
 * -o，优雅关闭连接，默认不使用
 	* 0，不使用
 	* 1，使用
+* -s，数据库连接数量
+	* 默认为8
+* -t，线程数量
+	* 默认为8
 
 若使用CGI数据库校验方式，按如下编译代码，若使用同步校验，则跳过下面修改与生成CGI步骤.
 
@@ -142,7 +151,7 @@ Update
 测试示例命令与含义
 
 ```C++
-./server -p 9007 -s 1 -l 1 -t 0 -o 1
+./server -p 9007 -v 1 -l 1 -m 0 -o 1 -s 10 -t 10
 ```
 
 - [x] 端口9007
@@ -150,6 +159,8 @@ Update
 - [x] 异步写入日志
 - [x] 使用LT水平触发
 - [x] 使用优雅关闭连接
+- [x] 数据库连接池内有10条连接
+- [x] 线程池内有10条线程
 
 
 Demo
@@ -229,3 +240,5 @@ web端界面
 致谢
 ------------
 Linux高性能服务器编程，游双著.
+
+感谢以下朋友的PR和帮助: [RownH](https://github.com/RownH)，[ZWiley](https://github.com/ZWiley)，[zjuHong](https://github.com/zjuHong)，[mamil](https://github.com/mamil)，[byfate](https://github.com/byfate).
