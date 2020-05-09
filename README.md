@@ -94,8 +94,8 @@ Demo演示
 
 如果遇到github代码下载失败，或访问太慢，可以从以下链接下载，与Github最新提交同步.
 
-* 重构版本下载地址 : [BaiduYun](https://pan.baidu.com/s/1V3svZz3BQrQAwpwH2h67TA)
-    * 提取码 : p5bt
+* 重构版本下载地址 : [BaiduYun](https://pan.baidu.com/s/18VZ3abq9sj4hUGkE4Hp_FQ)
+    * 提取码 : q5yc
 * 原始版本(raw_version)下载地址 : [BaiduYun](https://pan.baidu.com/s/1a-UfktwKrCMc73UvWGESMw)
     * 提取码 : i9xt
     * [原始版本文档](https://github.com/qinguoyi/TinyWebServer/tree/master/raw_version)
