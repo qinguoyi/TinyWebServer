@@ -19,10 +19,8 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <sys/uio.h>
-#include <map>
 #include "../lock/locker.h"
 #include "../CGImysql/sql_connection_pool.h"
-
 class http_conn
 {
 public:
@@ -70,7 +68,7 @@ public:
     ~http_conn() {}
 
 public:
-    void init(int sockfd, const sockaddr_in &addr, char*, map<string, string>&, int, int);
+    void init(int sockfd, const sockaddr_in &addr);
     void close_conn(bool real_close = true);
     void process();
     bool read_once();
@@ -79,8 +77,8 @@ public:
     {
         return &m_address;
     }
-    void initmysql_result(connection_pool *connPool, map<string, string>&);
-    void initresultFile(connection_pool *connPool, map<string, string>&);
+    void initmysql_result(connection_pool *connPool);
+    void initresultFile(connection_pool *connPool);
 
 private:
     void init();
@@ -132,20 +130,6 @@ private:
     char *m_string; //存储请求头数据
     int bytes_to_send;
     int bytes_have_send;
-    const char *ok_200_title;
-    const char *error_400_title;
-    const char *error_400_form ;
-    const char *error_403_title;
-    const char *error_403_form ;
-    const char *error_404_title;
-    const char *error_404_form;
-    const char *error_500_title;
-    const char *error_500_form;
-    char *doc_root;
-    
-    map<string, string> m_users;
-    int m_SQLVerify;
-    int m_TRIGMode;
 };
 
 #endif

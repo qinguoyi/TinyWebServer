@@ -25,15 +25,15 @@ public:
 
 	void init(string url, string User, string PassWord, string DataBaseName, int Port, unsigned int MaxConn); 
 	
-	
-
-private:
 	connection_pool();
 	~connection_pool();
 
+private:
 	unsigned int MaxConn;  //最大连接数
 	unsigned int CurConn;  //当前已使用的连接数
 	unsigned int FreeConn; //当前空闲的连接数
+
+private:
 	locker lock;
 	list<MYSQL *> connList; //连接池
 	sem reserve;
