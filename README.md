@@ -14,8 +14,8 @@ Download
 -------
 代码下载经常失败，访问太慢，无需科学上网，与Github最新提交同步.
 
-* 重构版本下载地址 : [BaiduYun](https://pan.baidu.com/s/13qU5pTbOwY7fd-R8qMsTNg)
-* 提取码 : qz82
+* 重构版本下载地址 : [BaiduYun](https://pan.baidu.com/s/1Xzp4NfbVYoaJWZuxJc5u1g)
+* 提取码 : wcbj
 * raw_version下载地址 : [BaiduYun](https://pan.baidu.com/s/1f9dkc5t-joh_D40wif4_6g)
 * 提取码 : pybt
 
