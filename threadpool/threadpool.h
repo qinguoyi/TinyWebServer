@@ -29,11 +29,10 @@ private:
     std::list<T *> m_workqueue; //请求队列
     locker m_queuelocker;       //保护请求队列的互斥锁
     sem m_queuestat;            //是否有任务需要处理
-    bool m_stop;                //是否结束线程
     connection_pool *m_connPool;  //数据库
 };
 template <typename T>
-threadpool<T>::threadpool( connection_pool *connPool, int thread_number, int max_requests) : m_thread_number(thread_number), m_max_requests(max_requests), m_stop(false), m_threads(NULL),m_connPool(connPool)
+threadpool<T>::threadpool( connection_pool *connPool, int thread_number, int max_requests) : m_thread_number(thread_number), m_max_requests(max_requests), m_threads(NULL),m_connPool(connPool)
 {
     if (thread_number <= 0 || max_requests <= 0)
         throw std::exception();
@@ -42,7 +41,6 @@ threadpool<T>::threadpool( connection_pool *connPool, int thread_number, int max
         throw std::exception();
     for (int i = 0; i < thread_number; ++i)
     {
-        //printf("create the %dth thread\n",i);
         if (pthread_create(m_threads + i, NULL, worker, this) != 0)
         {
             delete[] m_threads;
@@ -59,7 +57,6 @@ template <typename T>
 threadpool<T>::~threadpool()
 {
     delete[] m_threads;
-    m_stop = true;
 }
 template <typename T>
 bool threadpool<T>::append(T *request)
@@ -85,7 +82,7 @@ void *threadpool<T>::worker(void *arg)
 template <typename T>
 void threadpool<T>::run()
 {
-    while (!m_stop)
+    while (true)
     {
         m_queuestat.wait();
         m_queuelocker.lock();

@@ -529,7 +529,7 @@ http_conn::HTTP_CODE http_conn::do_request()
                     //关闭管道的读端
                     close(pipefd[0]);
                     //父进程去执行cgi程序，m_real_file,name,password为输入
-                    execl(m_real_file, name, password,  "./CGImysql/id_passwd.txt","1", NULL);
+                    execl(m_real_file, name, password, "./CGImysql/id_passwd.txt", "1", NULL);
                 }
                 else
                 {
@@ -584,7 +584,7 @@ http_conn::HTTP_CODE http_conn::do_request()
                 close(pipefd[0]);
                 //父进程去执行cgi程序，m_real_file,name,password为输入
                 //./check.cgi name password
-                execl(m_real_file, &flag, name, password, "2",NULL);
+                execl(m_real_file, &flag, name, password, "2", NULL);
             }
             else
             {
@@ -773,8 +773,8 @@ bool http_conn::add_status_line(int status, const char *title)
 }
 bool http_conn::add_headers(int content_len)
 {
-    return add_content_length(content_len) && add_linger() && 
-    add_blank_line();
+    return add_content_length(content_len) && add_linger() &&
+           add_blank_line();
 }
 bool http_conn::add_content_length(int content_len)
 {
