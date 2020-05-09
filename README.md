@@ -90,15 +90,13 @@ Demo演示
 - [x] 新增命令行日志开关，关闭日志后更新压力测试结果
 - [x] 改进编译方式，只配置一次SQL信息即可
 
-代码下载经常失败，访问太慢，无需科学上网，与Github最新提交同步.
+目前有两个版本，版本间的代码结构有较大改动，文档和代码运行方法也不一致. 重构版本更简洁，原始版本(raw_version)更大保留游双代码的原汁原味，从原始版本更容易入手.
 
-目前有两个版本，版本间的代码结构有较大改动，文档和代码运行方法也不一致.
-
-重构版本更简洁，原始版本(raw_version)更大保留游双代码的原汁原味，从原始版本更容易入手.
+如果遇到github代码下载失败，或访问太慢，可以从以下链接下载，与Github最新提交同步.
 
 * 重构版本下载地址 : [BaiduYun](https://pan.baidu.com/s/1V3svZz3BQrQAwpwH2h67TA)
     * 提取码 : p5bt
-* raw_version下载地址 : [BaiduYun](https://pan.baidu.com/s/1a-UfktwKrCMc73UvWGESMw)
+* 原始版本(raw_version)下载地址 : [BaiduYun](https://pan.baidu.com/s/1a-UfktwKrCMc73UvWGESMw)
     * 提取码 : i9xt
     * [原始版本文档](https://github.com/qinguoyi/TinyWebServer/tree/master/raw_version)
 
