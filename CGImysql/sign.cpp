@@ -9,9 +9,6 @@
 #include <sstream>
 using namespace std;
 
-//#define CGISQL    //不使用连接池
-#define CGISQLPOOL //使用连接池
-
 int main(int argc, char *argv[])
 {
     map<string, string> users;
@@ -21,6 +18,9 @@ int main(int argc, char *argv[])
     
     if ("2" == SQLVerify)
     {
+        string sql_user(argv[4]);
+        string sql_passwd(argv[5]);
+        string sql_name(argv[6]);
 
         MYSQL *con = NULL;
         con = mysql_init(con);
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
             cout << "Error:" << mysql_error(con);
             exit(1);
         }
-        con = mysql_real_connect(con, "localhost", "root", "root", "qgydb", 3306, NULL, 0);
+        con = mysql_real_connect(con, "localhost", sql_user.c_str(), sql_passwd.c_str(), sql_name.c_str(), 3306, NULL, 0);
 
         if (con == NULL)
         {

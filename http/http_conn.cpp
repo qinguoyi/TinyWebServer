@@ -142,7 +142,8 @@ void http_conn::close_conn(bool real_close)
 }
 
 //初始化连接,外部调用初始化套接字地址
-void http_conn::init(int sockfd, const sockaddr_in &addr, char *root, map<string, string> &users, int SQLVerify, int TRIGMode)
+void http_conn::init(int sockfd, const sockaddr_in &addr, char *root, map<string, string> &users, int SQLVerify, int TRIGMode,
+                     int close_log, string user, string passwd, string sqlname)
 {
     m_sockfd = sockfd;
     m_address = addr;
@@ -155,6 +156,11 @@ void http_conn::init(int sockfd, const sockaddr_in &addr, char *root, map<string
     m_users = users;
     m_SQLVerify = SQLVerify;
     m_TRIGMode = TRIGMode;
+    m_close_log = close_log;
+
+    strcpy(sql_user, user.c_str());
+    strcpy(sql_passwd, passwd.c_str());
+    strcpy(sql_name, sqlname.c_str());
 
     init();
 }
@@ -328,7 +334,6 @@ http_conn::HTTP_CODE http_conn::parse_headers(char *text)
     }
     else
     {
-        //printf("oop!unknow header: %s\n",text);
         LOG_INFO("oop!unknow header: %s", text);
         Log::get_instance()->flush();
     }
@@ -348,7 +353,6 @@ http_conn::HTTP_CODE http_conn::parse_content(char *text)
     return NO_REQUEST;
 }
 
-//
 http_conn::HTTP_CODE http_conn::process_read()
 {
     LINE_STATUS line_status = LINE_OK;
@@ -580,11 +584,12 @@ http_conn::HTTP_CODE http_conn::do_request()
             {
                 //标准输出，文件描述符是1，然后将输出重定向到管道写端
                 dup2(pipefd[1], 1);
+
                 //关闭管道的读端
                 close(pipefd[0]);
-                //父进程去执行cgi程序，m_real_file,name,password为输入
-                //./check.cgi name password
-                execl(m_real_file, &flag, name, password, "2", NULL);
+
+                //父进程去执行cgi程序
+                execl(m_real_file, &flag, name, password, "2", sql_user, sql_passwd, sql_name, NULL);
             }
             else
             {
@@ -600,9 +605,9 @@ http_conn::HTTP_CODE http_conn::do_request()
                 }
                 if (flag == '2')
                 {
-                    //printf("登录检测\n");
                     LOG_INFO("%s", "登录检测");
                     Log::get_instance()->flush();
+
                     //当用户名和密码正确，则显示welcome界面，否则显示错误界面
                     if (result == '1')
                         strcpy(m_url, "/welcome.html");
@@ -613,6 +618,7 @@ http_conn::HTTP_CODE http_conn::do_request()
                 {
                     LOG_INFO("%s", "注册检测");
                     Log::get_instance()->flush();
+
                     //当成功注册后，则显示登陆界面，否则显示错误界面
                     if (result == '1')
                         strcpy(m_url, "/log.html");
@@ -670,10 +676,13 @@ http_conn::HTTP_CODE http_conn::do_request()
 
     if (stat(m_real_file, &m_file_stat) < 0)
         return NO_RESOURCE;
+
     if (!(m_file_stat.st_mode & S_IROTH))
         return FORBIDDEN_REQUEST;
+
     if (S_ISDIR(m_file_stat.st_mode))
         return BAD_REQUEST;
+
     int fd = open(m_real_file, O_RDONLY);
     m_file_address = (char *)mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
     close(fd);

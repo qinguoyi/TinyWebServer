@@ -31,15 +31,17 @@ public:
 
     void init(int port , string user, string passWord, string databaseName,
               int log_write , int sqlverify, int opt_linger, int trigmode, int sql_num,
-              int thread_num);
+              int thread_num, int close_log);
 
     void thread_pool();
     void sql_pool();
     void log_write();
-    void timer();
 
     void eventListen();
     void eventLoop();
+    void timer(int connfd, struct sockaddr_in client_address);
+    void adjust_timer(util_timer *timer);
+    void deal_timer(util_timer *timer, int sockfd);
     bool dealclinetdata();
     bool dealwithsignal(bool timeout, bool& stop_server);
     void dealwithread(int sockfd);
@@ -50,6 +52,7 @@ public:
     int m_port;
     char *m_root;
     int m_log_write;
+    int m_close_log;
 
     int m_pipefd[2];
     int m_epollfd;

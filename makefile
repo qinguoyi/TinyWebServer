@@ -4,7 +4,6 @@ server: main.c ./timer/lst_timer.h ./timer/lst_timer.cpp ./threadpool/threadpool
 CGISQL.cgi:./CGImysql/sign.cpp ./CGImysql/sql_connection_pool.cpp ./CGImysql/sql_connection_pool.h
 	g++ -o ./root/CGISQL.cgi ./CGImysql/sign.cpp ./CGImysql/sql_connection_pool.cpp ./CGImysql/sql_connection_pool.h -lmysqlclient -lpthread
 
-
 clean:
 	rm  -r server
 	rm  -r ./root/CGISQL.cgi

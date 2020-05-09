@@ -98,9 +98,7 @@ void sort_timer_lst::tick()
     {
         return;
     }
-    //printf( "timer tick\n" );
-    LOG_INFO("%s", "timer tick");
-    Log::get_instance()->flush();
+    
     time_t cur = time(NULL);
     util_timer *tmp = head;
     while (tmp)
@@ -223,6 +221,4 @@ void cb_func(client_data *user_data)
     assert(user_data);
     close(user_data->sockfd);
     http_conn::m_user_count--;
-    LOG_INFO("close fd %d", user_data->sockfd);
-    Log::get_instance()->flush();
 }

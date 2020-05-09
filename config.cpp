@@ -21,11 +21,14 @@ Config::Config(){
 
     //线程池内的线程数量,默认8
     thread_num = 8;
+
+    //关闭日志,默认不关闭
+    close_log = 0;
 }
 
 void Config::parse_arg(int argc, char*argv[]){
     int opt;
-    const char *str = "p:v:l:m:o:s:t:";
+    const char *str = "p:v:l:m:o:s:t:c:";
     while ((opt = getopt(argc, argv, str)) != -1)
     {
         switch (opt)
@@ -62,7 +65,12 @@ void Config::parse_arg(int argc, char*argv[]){
         }
         case 't':
         {
-            thread_num = atoi(optarg);;
+            thread_num = atoi(optarg);
+            break;
+        }
+        case 'c':
+        {
+            close_log = atoi(optarg);
             break;
         }
         default:

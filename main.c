@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
     //初始化
     server.init(config.PORT, user, passwd, databasename, config.LOGWrite, config.SQLVerify,
-                config.OPT_LINGER, config.TRIGMode,  config.sql_num,  config.thread_num);
+                config.OPT_LINGER, config.TRIGMode,  config.sql_num,  config.thread_num, config.close_log);
     
     //日志
     server.log_write();
@@ -26,12 +26,10 @@ int main(int argc, char *argv[])
     //线程池
     server.thread_pool();
 
-    //服务器
+    //监听
     server.eventListen();
-    
-    //定时器
-    server.timer();
 
+    //运行
     server.eventLoop();
 
     return 0;
