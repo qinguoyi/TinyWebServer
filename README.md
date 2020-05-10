@@ -134,7 +134,7 @@ Demo演示
     //数据库登录名,密码,库名
     string user = "root";
     string passwd = "root";
-    string databasename = "qgydb";
+    string databasename = "yourdb";
     ```
 
 * build

@@ -43,7 +43,7 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
     ```C++
     // root root修改为服务器数据库的登录名和密码
 	// qgydb修改为上述创建的yourdb库名
-    connPool->init("localhost", "root", "root", "qgydb", 3306, 8);
+    connPool->init("localhost", "root", "root", "yourdb", 3306, 8);
     ```
 
 * 修改http_conn.cpp中的root路径
