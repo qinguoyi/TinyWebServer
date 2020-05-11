@@ -4,7 +4,7 @@ TinyWebServer
 ===============
 Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭建属于自己的服务器.
 
-* 使用**线程池 + epoll(ET和LT均实现) + 反应堆(Reactor和Proactor均实现)**的并发模型
+* 使用** 线程池 + epoll(ET和LT均实现) + 反应堆(Reactor和Proactor均实现) **的并发模型
 * 使用**状态机**解析HTTP请求报文，支持解析**GET和POST**请求
 * 访问服务器数据库实现web端用户**注册、登录**功能，可以请求服务器**图片和视频文件**
 * 实现**同步/异步日志系统**，记录服务器运行状态
@@ -235,4 +235,4 @@ Demo演示
 ------------
 Linux高性能服务器编程，游双著.
 
-感谢以下朋友的PR和帮助: [RownH](https://github.com/RownH)，[ZWiley](https://github.com/ZWiley)，[zjuHong](https://github.com/zjuHong)，[mamil](https://github.com/mamil)，[byfate](https://github.com/byfate)，[MaJun827]https://github.com/MaJun827).
+感谢以下朋友的PR和帮助: [RownH](https://github.com/RownH)，[ZWiley](https://github.com/ZWiley)，[zjuHong](https://github.com/zjuHong)，[mamil](https://github.com/mamil)，[byfate](https://github.com/byfate)，[MaJun827](https://github.com/MaJun827).
