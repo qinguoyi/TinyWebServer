@@ -12,12 +12,8 @@
 #include <cassert>
 #include <sys/epoll.h>
 
-#include "./lock/locker.h"
 #include "./threadpool/threadpool.h"
-#include "./timer/lst_timer.h"
 #include "./http/http_conn.h"
-#include "./log/log.h"
-#include "./CGImysql/sql_connection_pool.h"
 
 const int MAX_FD = 65536;           //最大文件描述符
 const int MAX_EVENT_NUMBER = 10000; //最大事件数
@@ -31,7 +27,7 @@ public:
 
     void init(int port , string user, string passWord, string databaseName,
               int log_write , int sqlverify, int opt_linger, int trigmode, int sql_num,
-              int thread_num, int close_log);
+              int thread_num, int close_log, int actor_model);
 
     void thread_pool();
     void sql_pool();
@@ -53,6 +49,7 @@ public:
     char *m_root;
     int m_log_write;
     int m_close_log;
+    int m_actormodel;
 
     int m_pipefd[2];
     int m_epollfd;
@@ -65,7 +62,6 @@ public:
     string m_databaseName; //使用数据库名
     int m_sql_num;
     int m_SQLVerify;
-    map<string, string> m_users_passwd;
 
     //线程池相关
     threadpool<http_conn> *m_pool;

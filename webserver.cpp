@@ -29,7 +29,7 @@ WebServer::~WebServer()
 }
 
 void WebServer::init(int port, string user, string passWord, string databaseName, int log_write, int sqlverify,
-                     int opt_linger, int trigmode, int sql_num, int thread_num, int close_log)
+                     int opt_linger, int trigmode, int sql_num, int thread_num, int close_log, int actor_model)
 {
     m_port = port;
     m_user = user;
@@ -42,6 +42,7 @@ void WebServer::init(int port, string user, string passWord, string databaseName
     m_OPT_LINGER = opt_linger;
     m_TRIGMode = trigmode;
     m_close_log = close_log;
+    m_actormodel = actor_model;
 }
 
 void WebServer::log_write()
@@ -64,15 +65,15 @@ void WebServer::sql_pool()
 
     //初始化数据库读取表
     if (0 == m_SQLVerify)
-        users->initmysql_result(m_connPool, m_users_passwd);
+        users->initmysql_result(m_connPool);
     else if (1 == m_SQLVerify)
-        users->initresultFile(m_connPool, m_users_passwd);
+        users->initresultFile(m_connPool);
 }
 
 void WebServer::thread_pool()
 {
     //线程池
-    m_pool = new threadpool<http_conn>(m_connPool, m_thread_num);
+    m_pool = new threadpool<http_conn>(m_actormodel, m_connPool, m_thread_num);
 }
 
 void WebServer::eventListen()
@@ -135,7 +136,7 @@ void WebServer::eventListen()
 
 void WebServer::timer(int connfd, struct sockaddr_in client_address)
 {
-    users[connfd].init(connfd, client_address, m_root, m_users_passwd, m_SQLVerify, m_TRIGMode, m_close_log, m_user, m_passWord, m_databaseName);
+    users[connfd].init(connfd, client_address, m_root, m_SQLVerify, m_TRIGMode, m_close_log, m_user, m_passWord, m_databaseName);
 
     //初始化client_data数据
     //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
@@ -257,49 +258,104 @@ bool WebServer::dealwithsignal(bool timeout, bool &stop_server)
 void WebServer::dealwithread(int sockfd)
 {
     util_timer *timer = users_timer[sockfd].timer;
-    if (users[sockfd].read_once())
+
+    //reactor
+    if (1 == m_actormodel)
     {
-
-        LOG_INFO("deal with the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
-        Log::get_instance()->flush();
-
-        //若监测到读事件，将该事件放入请求队列
-        m_pool->append(users + sockfd);
-
         if (timer)
         {
             adjust_timer(timer);
         }
+
+        //若监测到读事件，将该事件放入请求队列
+        m_pool->append(users + sockfd, 0);
+
+        while (true)
+        {
+            if (1 == users[sockfd].improv)
+            {
+                if (1 == users[sockfd].timer_flag)
+                {
+                    deal_timer(timer, sockfd);
+                    users[sockfd].timer_flag = 0;
+                }
+                users[sockfd].improv = 0;
+                break;
+            }
+        }
     }
     else
     {
-        deal_timer(timer, sockfd);
+        //proactor
+        if (users[sockfd].read_once())
+        {
+            LOG_INFO("deal with the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
+            Log::get_instance()->flush();
+
+            //若监测到读事件，将该事件放入请求队列
+            m_pool->append_p(users + sockfd);
+
+            if (timer)
+            {
+                adjust_timer(timer);
+            }
+        }
+        else
+        {
+            deal_timer(timer, sockfd);
+        }
     }
 }
 
 void WebServer::dealwithwrite(int sockfd)
 {
     util_timer *timer = users_timer[sockfd].timer;
-    if (users[sockfd].write())
+    //reactor
+    if (1 == m_actormodel)
     {
-
-        LOG_INFO("send data to the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
-        Log::get_instance()->flush();
-
         if (timer)
         {
             adjust_timer(timer);
         }
+
+        m_pool->append(users + sockfd, 1);
+
+        while (true)
+        {
+            if (1 == users[sockfd].improv)
+            {
+                if (1 == users[sockfd].timer_flag)
+                {
+                    deal_timer(timer, sockfd);
+                    users[sockfd].timer_flag = 0;
+                }
+                users[sockfd].improv = 0;
+                break;
+            }
+        }
     }
     else
     {
-        deal_timer(timer, sockfd);
+        //proactor
+        if (users[sockfd].write())
+        {
+            LOG_INFO("send data to the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
+            Log::get_instance()->flush();
+
+            if (timer)
+            {
+                adjust_timer(timer);
+            }
+        }
+        else
+        {
+            deal_timer(timer, sockfd);
+        }
     }
 }
 
 void WebServer::eventLoop()
 {
-
     bool timeout = false;
     bool stop_server = false;
 

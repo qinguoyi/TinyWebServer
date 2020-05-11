@@ -4,7 +4,7 @@ TinyWebServer
 ===============
 Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭建属于自己的服务器.
 
-* 使用**线程池 + epoll(ET和LT均实现) + 模拟Proactor模式**的并发模型
+* 使用**线程池 + epoll(ET和LT均实现) + 反应堆(Reactor和Proactor均实现)**的并发模型
 * 使用**状态机**解析HTTP请求报文，支持解析**GET和POST**请求
 * 访问服务器数据库实现web端用户**注册、登录**功能，可以请求服务器**图片和视频文件**
 * 实现**同步/异步日志系统**，记录服务器运行状态
@@ -59,13 +59,21 @@ Demo演示
 -------------
 在关闭日志后，使用Webbench对服务器进行压力测试，在ET非阻塞和LT阻塞模式下均可实现上万的并发连接. 
 
-> * ET非阻塞，57838 QPS
+> * Proactor，LT阻塞，84016 QPS
 
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1geme8se1a0j30f806qjun.jpg" height="201"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1geotkkw531j30f906tn0f.jpg" height="201"/> </div>
 
-> * LT阻塞，64525 QPS
+> * Proactor，ET非阻塞，83419 QPS
 
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1geme7wxpw3j30f906uadg.jpg" height="201"/> </div>
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1geotkozc4nj30f806p0vu.jpg" height="201"/> </div>
+
+> * Reactor，LT阻塞，60218 QPS
+
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1geotkad1v2j30f906rad8.jpg" height="201"/> </div>
+
+> * Reactor，ET非阻塞，58138 QPS
+
+<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1geotk12vwxj30fa06t0w3.jpg" height="201"/> </div>
 
 > * 并发连接总数：10500
 > * 访问服务器时间：5s
@@ -89,6 +97,7 @@ Demo演示
 - [x] main函数封装重构
 - [x] 新增命令行日志开关，关闭日志后更新压力测试结果
 - [x] 改进编译方式，只配置一次SQL信息即可
+- [x] 新增Reactor模式，并完成压力测试
 
 目前有两个版本，版本间的代码结构有较大改动，文档和代码运行方法也不一致. 重构版本更简洁，原始版本(raw_version)更大保留游双代码的原汁原味，从原始版本更容易入手.
 
@@ -159,7 +168,7 @@ Demo演示
 ------
 
 ```C++
-./server [-p port] [-v SQLVerify] [-l LOGWrite] [-m TRIGMode] [-o OPT_LINGER] [-s sql_num] [-t thread_num] [-c close_log]
+./server [-p port] [-v SQLVerify] [-l LOGWrite] [-m TRIGMode] [-o OPT_LINGER] [-s sql_num] [-t thread_num] [-c close_log] [-a actor_model]
 ```
 
 温馨提示:以上参数不是非必须，不用全部使用，根据个人情况搭配选用即可.
@@ -186,11 +195,14 @@ Demo演示
 * -c，关闭日志，默认打开
 	* 0，打开日志
 	* 1，关闭日志
+* -a，选择反应堆模型，默认Proactor
+	* 0，Proactor模型
+	* 1，Reactor模型
 
 测试示例命令与含义
 
 ```C++
-./server -p 9007 -v 1 -l 1 -m 0 -o 1 -s 10 -t 10 -c 1
+./server -p 9007 -v 1 -l 1 -m 0 -o 1 -s 10 -t 10 -c 1 -a 1
 ```
 
 - [x] 端口9007
@@ -201,6 +213,7 @@ Demo演示
 - [x] 数据库连接池内有10条连接
 - [x] 线程池内有10条线程
 - [x] 关闭日志
+- [x] Reactor反应堆模型
 
 庖丁解牛
 ------------
@@ -222,4 +235,4 @@ Demo演示
 ------------
 Linux高性能服务器编程，游双著.
 
-感谢以下朋友的PR和帮助: [RownH](https://github.com/RownH)，[ZWiley](https://github.com/ZWiley)，[zjuHong](https://github.com/zjuHong)，[mamil](https://github.com/mamil)，[byfate](https://github.com/byfate).
+感谢以下朋友的PR和帮助: [RownH](https://github.com/RownH)，[ZWiley](https://github.com/ZWiley)，[zjuHong](https://github.com/zjuHong)，[mamil](https://github.com/mamil)，[byfate](https://github.com/byfate)，[MaJun827]https://github.com/MaJun827).

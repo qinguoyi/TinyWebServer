@@ -24,11 +24,14 @@ Config::Config(){
 
     //关闭日志,默认不关闭
     close_log = 0;
+
+    //并发模型,默认是proactor
+    actor_model = 0;
 }
 
 void Config::parse_arg(int argc, char*argv[]){
     int opt;
-    const char *str = "p:v:l:m:o:s:t:c:";
+    const char *str = "p:v:l:m:o:s:t:c:a:";
     while ((opt = getopt(argc, argv, str)) != -1)
     {
         switch (opt)
@@ -71,6 +74,11 @@ void Config::parse_arg(int argc, char*argv[]){
         case 'c':
         {
             close_log = atoi(optarg);
+            break;
+        }
+        case 'a':
+        {
+            actor_model = atoi(optarg);
             break;
         }
         default:

@@ -20,8 +20,11 @@
 #include <sys/wait.h>
 #include <sys/uio.h>
 #include <map>
+
 #include "../lock/locker.h"
 #include "../CGImysql/sql_connection_pool.h"
+#include "../timer/lst_timer.h"
+#include "../log/log.h"
 
 class http_conn
 {
@@ -70,7 +73,7 @@ public:
     ~http_conn() {}
 
 public:
-    void init(int sockfd, const sockaddr_in &addr, char *, map<string, string> &, int, int, int, string user, string passwd, string sqlname);
+    void init(int sockfd, const sockaddr_in &addr, char *, int, int, int, string user, string passwd, string sqlname);
     void close_conn(bool real_close = true);
     void process();
     bool read_once();
@@ -79,8 +82,11 @@ public:
     {
         return &m_address;
     }
-    void initmysql_result(connection_pool *connPool, map<string, string> &);
-    void initresultFile(connection_pool *connPool, map<string, string> &);
+    void initmysql_result(connection_pool *connPool);
+    void initresultFile(connection_pool *connPool);
+    int timer_flag;
+    int improv;
+
 
 private:
     void init();
@@ -106,6 +112,7 @@ public:
     static int m_epollfd;
     static int m_user_count;
     MYSQL *mysql;
+    int m_state;  //读为0, 写为1
 
 private:
     int m_sockfd;
