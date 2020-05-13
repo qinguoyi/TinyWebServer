@@ -61,7 +61,7 @@ void WebServer::sql_pool()
 {
     //初始化数据库连接池
     m_connPool = connection_pool::GetInstance();
-    m_connPool->init("localhost", m_user, m_passWord, m_databaseName, 3306, m_sql_num);
+    m_connPool->init("localhost", m_user, m_passWord, m_databaseName, 3306, m_sql_num, m_close_log);
 
     //初始化数据库读取表
     if (0 == m_SQLVerify)
@@ -160,7 +160,6 @@ void WebServer::adjust_timer(util_timer *timer)
     timer_lst.adjust_timer(timer);
 
     LOG_INFO("%s", "adjust timer once");
-    Log::get_instance()->flush();
 }
 
 void WebServer::deal_timer(util_timer *timer, int sockfd)
@@ -172,7 +171,6 @@ void WebServer::deal_timer(util_timer *timer, int sockfd)
     }
 
     LOG_INFO("close fd %d", users_timer[sockfd].sockfd);
-    Log::get_instance()->flush();
 }
 
 bool WebServer::dealclinetdata()
@@ -290,7 +288,6 @@ void WebServer::dealwithread(int sockfd)
         if (users[sockfd].read_once())
         {
             LOG_INFO("deal with the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
-            Log::get_instance()->flush();
 
             //若监测到读事件，将该事件放入请求队列
             m_pool->append_p(users + sockfd);
@@ -340,7 +337,6 @@ void WebServer::dealwithwrite(int sockfd)
         if (users[sockfd].write())
         {
             LOG_INFO("send data to the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
-            Log::get_instance()->flush();
 
             if (timer)
             {
@@ -407,7 +403,6 @@ void WebServer::eventLoop()
             utils.timer_handler();
 
             LOG_INFO("%s", "timer tick");
-            Log::get_instance()->flush();
 
             timeout = false;
         }

@@ -12,8 +12,8 @@ using namespace std;
 
 connection_pool::connection_pool()
 {
-	this->CurConn = 0;
-	this->FreeConn = 0;
+	m_CurConn = 0;
+	m_FreeConn = 0;
 }
 
 connection_pool *connection_pool::GetInstance()
@@ -23,15 +23,15 @@ connection_pool *connection_pool::GetInstance()
 }
 
 //构造初始化
-void connection_pool::init(string url, string User, string PassWord, string DBName, int Port, unsigned int MaxConn)
+void connection_pool::init(string url, string User, string PassWord, string DBName, int Port, int MaxConn, int close_log)
 {
-	this->url = url;
-	this->Port = Port;
-	this->User = User;
-	this->PassWord = PassWord;
-	this->DatabaseName = DBName;
+	m_url = url;
+	m_Port = Port;
+	m_User = User;
+	m_PassWord = PassWord;
+	m_DatabaseName = DBName;
+	m_close_log = close_log;
 
-	lock.lock();
 	for (int i = 0; i < MaxConn; i++)
 	{
 		MYSQL *con = NULL;
@@ -39,25 +39,23 @@ void connection_pool::init(string url, string User, string PassWord, string DBNa
 
 		if (con == NULL)
 		{
-			cout << "Error:" << mysql_error(con);
+			LOG_ERROR("MySQL Error");
 			exit(1);
 		}
 		con = mysql_real_connect(con, url.c_str(), User.c_str(), PassWord.c_str(), DBName.c_str(), Port, NULL, 0);
 
 		if (con == NULL)
 		{
-			cout << "Error: " << mysql_error(con);
+			LOG_ERROR("MySQL Error");
 			exit(1);
 		}
 		connList.push_back(con);
-		++FreeConn;
+		++m_FreeConn;
 	}
 
-	reserve = sem(FreeConn);
+	reserve = sem(m_FreeConn);
 
-	this->MaxConn = FreeConn;
-	
-	lock.unlock();
+	m_MaxConn = m_FreeConn;
 }
 
 
@@ -76,8 +74,8 @@ MYSQL *connection_pool::GetConnection()
 	con = connList.front();
 	connList.pop_front();
 
-	--FreeConn;
-	++CurConn;
+	--m_FreeConn;
+	++m_CurConn;
 
 	lock.unlock();
 	return con;
@@ -92,8 +90,8 @@ bool connection_pool::ReleaseConnection(MYSQL *con)
 	lock.lock();
 
 	connList.push_back(con);
-	++FreeConn;
-	--CurConn;
+	++m_FreeConn;
+	--m_CurConn;
 
 	lock.unlock();
 
@@ -114,8 +112,8 @@ void connection_pool::DestroyPool()
 			MYSQL *con = *it;
 			mysql_close(con);
 		}
-		CurConn = 0;
-		FreeConn = 0;
+		m_CurConn = 0;
+		m_FreeConn = 0;
 		connList.clear();
 
 		lock.unlock();
@@ -127,7 +125,7 @@ void connection_pool::DestroyPool()
 //当前空闲的连接数
 int connection_pool::GetFreeConn()
 {
-	return this->FreeConn;
+	return this->m_FreeConn;
 }
 
 connection_pool::~connection_pool()

@@ -339,7 +339,6 @@ http_conn::HTTP_CODE http_conn::parse_headers(char *text)
     else
     {
         LOG_INFO("oop!unknow header: %s", text);
-        Log::get_instance()->flush();
     }
     return NO_REQUEST;
 }
@@ -368,7 +367,6 @@ http_conn::HTTP_CODE http_conn::process_read()
         text = get_line();
         m_start_line = m_checked_idx;
         LOG_INFO("%s", text);
-        Log::get_instance()->flush();
         switch (m_check_state)
         {
         case CHECK_STATE_REQUESTLINE:
@@ -553,7 +551,7 @@ http_conn::HTTP_CODE http_conn::do_request()
                     }
 
                     LOG_INFO("%s", "登录检测");
-                    Log::get_instance()->flush();
+
                     //当用户名和密码正确，则显示welcome界面，否则显示错误界面
                     if (result == '1')
                         strcpy(m_url, "/welcome.html");
@@ -610,7 +608,7 @@ http_conn::HTTP_CODE http_conn::do_request()
                 if (flag == '2')
                 {
                     LOG_INFO("%s", "登录检测");
-                    Log::get_instance()->flush();
+
 
                     //当用户名和密码正确，则显示welcome界面，否则显示错误界面
                     if (result == '1')
@@ -621,7 +619,6 @@ http_conn::HTTP_CODE http_conn::do_request()
                 else if (flag == '3')
                 {
                     LOG_INFO("%s", "注册检测");
-                    Log::get_instance()->flush();
 
                     //当成功注册后，则显示登陆界面，否则显示错误界面
                     if (result == '1')
@@ -776,8 +773,9 @@ bool http_conn::add_response(const char *format, ...)
     }
     m_write_idx += len;
     va_end(arg_list);
+    
     LOG_INFO("request:%s", m_write_buf);
-    Log::get_instance()->flush();
+
     return true;
 }
 bool http_conn::add_status_line(int status, const char *title)
