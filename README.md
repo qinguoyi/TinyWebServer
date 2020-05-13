@@ -103,8 +103,8 @@ Demo演示
 
 如果遇到github代码下载失败，或访问太慢，可以从以下链接下载，与Github最新提交同步.
 
-* 重构版本下载地址 : [BaiduYun](https://pan.baidu.com/s/16TF7H0mDrOA25YXoAQbcNw)
-    * 提取码 : mpsd
+* 重构版本下载地址 : [BaiduYun](https://pan.baidu.com/s/103FF9iQC24fQnXxO8ihA6w)
+    * 提取码 : 6vas
 * 原始版本(raw_version)下载地址 : [BaiduYun](https://pan.baidu.com/s/1a-UfktwKrCMc73UvWGESMw)
     * 提取码 : i9xt
     * [原始版本文档](https://github.com/qinguoyi/TinyWebServer/tree/master/raw_version)
@@ -137,7 +137,7 @@ Demo演示
     INSERT INTO user(username, passwd) VALUES('name', 'passwd');
     ```
 
-* 修改main.c中的数据库初始化信息
+* 修改main.cpp中的数据库初始化信息
 
     ```C++
     //数据库登录名,密码,库名
@@ -217,6 +217,8 @@ Demo演示
 
 庖丁解牛
 ------------
+近期版本迭代较快，以下内容多以旧版本(raw_version)代码为蓝本进行详解，重构版本讲解将于下月重制发布，感谢理解.
+
 * [最新版Web服务器项目详解 - 01 线程同步机制封装类](https://mp.weixin.qq.com/s?__biz=MzAxNzU2MzcwMw==&mid=2649274278&idx=3&sn=5840ff698e3f963c7855d702e842ec47&chksm=83ffbefeb48837e86fed9754986bca6db364a6fe2e2923549a378e8e5dec6e3cf732cdb198e2&scene=0&xtrack=1#rd)
 * [最新版Web服务器项目详解 - 02 半同步半反应堆线程池（上）](https://mp.weixin.qq.com/s?__biz=MzAxNzU2MzcwMw==&mid=2649274278&idx=4&sn=caa323faf0c51d882453c0e0c6a62282&chksm=83ffbefeb48837e841a6dbff292217475d9075e91cbe14042ad6e55b87437dcd01e6d9219e7d&scene=0&xtrack=1#rd)
 * [最新版Web服务器项目详解 - 03 半同步半反应堆线程池（下）](https://mp.weixin.qq.com/s/PB8vMwi8sB4Jw3WzAKpWOQ)
@@ -227,6 +229,7 @@ Demo演示
 * [最新版Web服务器项目详解 - 08 定时器处理非活动连接（下）](https://mp.weixin.qq.com/s/fb_OUnlV1SGuOUdrGrzVgg)
 * [最新版Web服务器项目详解 - 09 日志系统（上）](https://mp.weixin.qq.com/s/IWAlPzVDkR2ZRI5iirEfCg)
 * [最新版Web服务器项目详解 - 10 日志系统（下）](https://mp.weixin.qq.com/s/f-ujwFyCe1LZa3EB561ehA)
+* [最新版Web服务器项目详解 - 11 数据库连接池](https://mp.weixin.qq.com/s?__biz=MzAxNzU2MzcwMw==&mid=2649274326&idx=1&sn=5af78e2bf6552c46ae9ab2aa22faf839&chksm=83ffbe8eb4883798c3abb82ddd124c8100a39ef41ab8d04abe42d344067d5e1ac1b0cac9d9a3&token=1450918099&lang=zh_CN#rd)
 * 持续更新ing...
 
 <div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j3jrepyj30ij0cvjt8.jpg" height="350"/> </div>
