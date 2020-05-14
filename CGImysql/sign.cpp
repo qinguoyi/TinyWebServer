@@ -3,10 +3,10 @@
 #include <string>
 #include <string.h>
 #include <cstdio>
-#include "sql_connection_pool.h"
 #include <map>
 #include <fstream>
 #include <sstream>
+#include "../lock/locker.h"
 using namespace std;
 
 int main(int argc, char *argv[])
