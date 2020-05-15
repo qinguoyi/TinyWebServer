@@ -4,7 +4,7 @@ TinyWebServer
 ===============
 Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭建属于自己的服务器.
 
-* 使用 **线程池 + epoll(ET和LT均实现) + 反应堆(Reactor和Proactor均实现)** 的并发模型
+* 使用 **线程池 + 非阻塞socket + epoll(ET和LT均实现) + 事件处理(Reactor和Proactor均实现)** 的并发模型
 * 使用**状态机**解析HTTP请求报文，支持解析**GET和POST**请求
 * 访问服务器数据库实现web端用户**注册、登录**功能，可以请求服务器**图片和视频文件**
 * 实现**同步/异步日志系统**，记录服务器运行状态
@@ -57,21 +57,21 @@ Demo演示
 
 压力测试
 -------------
-在关闭日志后，使用Webbench对服务器进行压力测试，在ET非阻塞和LT阻塞模式下均可实现上万的并发连接. 
+在关闭日志后，使用Webbench对服务器进行压力测试，在ET和LT模式下均可实现上万的并发连接. 
 
-> * Proactor，LT阻塞，84016 QPS
+> * Proactor，LT，84016 QPS
 
 <div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1geotkkw531j30f906tn0f.jpg" height="201"/> </div>
 
-> * Proactor，ET非阻塞，83419 QPS
+> * Proactor，ET，83419 QPS
 
 <div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1geotkozc4nj30f806p0vu.jpg" height="201"/> </div>
 
-> * Reactor，LT阻塞，60218 QPS
+> * Reactor，LT，60218 QPS
 
 <div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1geotkad1v2j30f906rad8.jpg" height="201"/> </div>
 
-> * Reactor，ET非阻塞，58138 QPS
+> * Reactor，ET，58138 QPS
 
 <div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1geotk12vwxj30fa06t0w3.jpg" height="201"/> </div>
 
@@ -87,7 +87,7 @@ Demo演示
 - [x] 增加请求视频文件的页面
 - [x] 解决数据库同步校验内存泄漏
 - [x] 实现两种CGI数据库访问逻辑
-- [x] 实现ET非阻塞和LT阻塞，并完成压力测试
+- [x] 实现非阻塞模式下的ET和LT触发，并完成压力测试
 - [x] 完善`lock.h`中的封装类，统一使用该同步机制
 - [x] 改进代码结构，更新局部变量懒汉单例模式
 - [x] 优化数据库连接池信号量与代码结构
