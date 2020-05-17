@@ -35,7 +35,7 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
     m_close_log = close_log;
     m_log_buf_size = log_buf_size;
     m_buf = new char[m_log_buf_size];
-    memset(m_buf, '\0', sizeof(m_buf));
+    memset(m_buf, '\0', m_log_buf_size);
     m_split_lines = split_lines;
 
     time_t t = time(NULL);
