@@ -2,10 +2,10 @@ CXX ?= g++
 CXXFLAGS = -Wall -Werror -Wextra
 
 DEBUG ?= 1
-ifeq (DEBUG, 1)
-    CFLAGS += -g -Ddebug
+ifeq ($(DEBUG), 1)
+    CXXFLAGS += -g -Ddebug
 else
-    CFLAGS += -O2
+    CXXFLAGS += -O2
 endif
 
 server: main.cpp ./timer/lst_timer.cpp ./http/http_conn.cpp ./log/log.cpp ./CGImysql/sql_connection_pool.cpp  webserver.cpp config.cpp
