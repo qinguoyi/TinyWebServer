@@ -34,7 +34,3 @@ Webbench对服务器进行压力测试，经压力测试可以实现上万的并
 
 <div align=center><img src="https://github.com/twomonkeyclub/TinyWebServer/blob/master/root/testresult.png" height="201"/> </div>
 
-模块详解
-------------
-请关注公众号 **“两猿社”**.
-> * 选择底部菜单栏：**互联网 -> C++技术 -> 练手项目 -> 13 服务器测试**
