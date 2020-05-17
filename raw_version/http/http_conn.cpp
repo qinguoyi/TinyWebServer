@@ -755,7 +755,7 @@ bool http_conn::write()
                 }
                 else
                 {
-                    m_iv[0].iov_base = m_write_buf + bytes_to_send;
+                    m_iv[0].iov_base = m_write_buf + bytes_have_send;
                     m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
                 }
                 modfd(m_epollfd, m_sockfd, EPOLLOUT);
