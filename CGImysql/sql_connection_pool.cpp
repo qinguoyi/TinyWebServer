@@ -115,8 +115,6 @@ void connection_pool::DestroyPool()
 		m_CurConn = 0;
 		m_FreeConn = 0;
 		connList.clear();
-
-		lock.unlock();
 	}
 
 	lock.unlock();
