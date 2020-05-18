@@ -25,7 +25,7 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
 
     ```C++
     // 建立yourdb库
-    create database yourdb set utf8;
+    create database yourdb;
 
     // 创建user表
     USE yourdb;

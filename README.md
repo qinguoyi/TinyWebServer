@@ -124,7 +124,7 @@ Demo演示
 
     ```C++
     // 建立yourdb库
-    create database yourdb set utf8;
+    create database yourdb;
 
     // 创建user表
     USE yourdb;
