@@ -217,7 +217,7 @@ bool WebServer::dealclinetdata()
     return true;
 }
 
-bool WebServer::dealwithsignal(bool timeout, bool &stop_server)
+bool WebServer::dealwithsignal(bool& timeout, bool& stop_server)
 {
     int ret = 0;
     int sig;
