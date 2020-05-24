@@ -728,7 +728,7 @@ bool http_conn::write()
 
     if (bytes_to_send == 0)
     {
-        modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
+        modfd(m_epollfd, m_sockfd, EPOLLIN);
         init();
         return true;
     }
@@ -741,7 +741,7 @@ bool http_conn::write()
         {
             if (errno == EAGAIN)
             {
-                modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
+                modfd(m_epollfd, m_sockfd, EPOLLOUT);
                 return true;
             }
             unmap();
@@ -765,7 +765,7 @@ bool http_conn::write()
         if (bytes_to_send <= 0)
         {
             unmap();
-            modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
+            modfd(m_epollfd, m_sockfd, EPOLLIN);
 
             if (m_linger)
             {
