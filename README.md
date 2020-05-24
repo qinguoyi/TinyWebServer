@@ -13,8 +13,8 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
 目录
 -----
 
-| [概述](#概述) | [框架](#框架) | [Demo演示](#Demo演示) | [压力测试](#压力测试) |[更新与下载](#更新与下载) | [快速运行](#快速运行) | [个性化运行](#个性化运行) | [庖丁解牛](#庖丁解牛) | [致谢](#致谢) |
-|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| [概述](#概述) | [框架](#框架) | [Demo演示](#Demo演示) | [压力测试](#压力测试) |[更新日志](#更新日志) |[源码下载](#源码下载) | [快速运行](#快速运行) | [个性化运行](#个性化运行) | [庖丁解牛](#庖丁解牛) | [致谢](#致谢) |
+|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
 
 
 概述
@@ -81,7 +81,7 @@ Demo演示
 
 **注意：** 使用本项目的webbench进行压测时，若报错显示webbench命令找不到，将可执行文件webbench删除后，重新编译即可。
 
-更新与下载
+更新日志
 -------
 - [x] 解决请求服务器上大文件的Bug
 - [x] 增加请求视频文件的页面
@@ -99,15 +99,17 @@ Demo演示
 - [x] 改进编译方式，只配置一次SQL信息即可
 - [x] 新增Reactor模式，并完成压力测试
 
-目前有两个版本，版本间的代码结构有较大改动，文档和代码运行方法也不一致. 重构版本更简洁，原始版本(raw_version)更大保留游双代码的原汁原味，从原始版本更容易入手.
+源码下载
+-------
+目前有两个版本，版本间的代码结构有较大改动，文档和代码运行方法也不一致。重构版本更简洁，原始版本(raw_version)更大保留游双代码的原汁原味，从原始版本更容易入手.
 
 如果遇到github代码下载失败，或访问太慢，可以从以下链接下载，与Github最新提交同步.
 
-* 重构版本下载地址 : [BaiduYun](https://pan.baidu.com/s/1y0YRpqCFW0ymXeQzKXT2pg)
-    * 提取码 : x5d1
-* 原始版本(raw_version)下载地址 : [BaiduYun](https://pan.baidu.com/s/1Z8VLCYTcE3hnDEd7k0lJJA)
-    * 提取码 : 4nb8
-    * [原始版本文档](https://github.com/qinguoyi/TinyWebServer/tree/master/raw_version)
+* 重构版本下载地址 : [BaiduYun](https://pan.baidu.com/s/1z_QjMEQaCHguXH6X9OuFZg)
+    * 提取码 : a7db
+* 原始版本(raw_version)下载地址 : [BaiduYun](https://pan.baidu.com/s/1kCxnE5Tn8XAX2nM5p5P1mg)
+    * 提取码 : gpq2
+    * 原始版本运行请参考[原始文档](https://github.com/qinguoyi/TinyWebServer/tree/master/raw_version)
 
 快速运行
 ------------
@@ -238,4 +240,4 @@ Demo演示
 ------------
 Linux高性能服务器编程，游双著.
 
-感谢以下朋友的PR和帮助: [@RownH](https://github.com/RownH)，[@mapleFU](https://github.com/mapleFU)，[@ZWiley](https://github.com/ZWiley)，[@zjuHong](https://github.com/zjuHong)，[@mamil](https://github.com/mamil)，[@byfate](https://github.com/byfate)，[@MaJun827](https://github.com/MaJun827)，[@BBLiu-coder](https://github.com/BBLiu-coder)，[@smoky96](https://github.com/smoky96)，[@yfBong](https://github.com/yfBong).
+感谢以下朋友的PR和帮助: [@RownH](https://github.com/RownH)，[@mapleFU](https://github.com/mapleFU)，[@ZWiley](https://github.com/ZWiley)，[@zjuHong](https://github.com/zjuHong)，[@mamil](https://github.com/mamil)，[@byfate](https://github.com/byfate)，[@MaJun827](https://github.com/MaJun827)，[@BBLiu-coder](https://github.com/BBLiu-coder)，[@smoky96](https://github.com/smoky96)，[@yfBong](https://github.com/yfBong)，[@liuwuyao](https://github.com/liuwuyao).
