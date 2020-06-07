@@ -71,7 +71,7 @@ public:
     Utils() {}
     ~Utils() {}
 
-    void init(sort_timer_lst timer_lst, int timeslot);
+    void init(int timeslot);
 
     //对文件描述符设置非阻塞
     int setnonblocking(int fd);

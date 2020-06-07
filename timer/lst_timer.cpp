@@ -145,9 +145,8 @@ void sort_timer_lst::add_timer(util_timer *timer, util_timer *lst_head)
     }
 }
 
-void Utils::init(sort_timer_lst timer_lst, int timeslot)
+void Utils::init(int timeslot)
 {
-    m_timer_lst = timer_lst;
     m_TIMESLOT = timeslot;
 }
 

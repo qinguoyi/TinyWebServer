@@ -45,24 +45,29 @@ void WebServer::init(int port, string user, string passWord, string databaseName
     m_actormodel = actor_model;
 }
 
-void WebServer::trig_mode(){
+void WebServer::trig_mode()
+{
     //LT + LT
-    if(0 == m_TRIGMode){
+    if (0 == m_TRIGMode)
+    {
         m_LISTENTrigmode = 0;
         m_CONNTrigmode = 0;
     }
     //LT + ET
-    else if(1 == m_TRIGMode){
+    else if (1 == m_TRIGMode)
+    {
         m_LISTENTrigmode = 0;
         m_CONNTrigmode = 1;
     }
     //ET + LT
-    else if(2 == m_TRIGMode){
+    else if (2 == m_TRIGMode)
+    {
         m_LISTENTrigmode = 1;
         m_CONNTrigmode = 0;
     }
     //ET + ET
-    else if(3 == m_TRIGMode){
+    else if (3 == m_TRIGMode)
+    {
         m_LISTENTrigmode = 1;
         m_CONNTrigmode = 1;
     }
@@ -135,7 +140,7 @@ void WebServer::eventListen()
     Utils::u_pipefd = m_pipefd;
     Utils::u_epollfd = m_epollfd;
 
-    utils.init(timer_lst, TIMESLOT);
+    utils.init(TIMESLOT);
 
     //epoll创建内核事件表
     epoll_event events[MAX_EVENT_NUMBER];
@@ -171,7 +176,7 @@ void WebServer::timer(int connfd, struct sockaddr_in client_address)
     time_t cur = time(NULL);
     timer->expire = cur + 3 * TIMESLOT;
     users_timer[connfd].timer = timer;
-    timer_lst.add_timer(timer);
+    utils.m_timer_lst.add_timer(timer);
 }
 
 //若有数据传输，则将定时器往后延迟3个单位
@@ -180,7 +185,7 @@ void WebServer::adjust_timer(util_timer *timer)
 {
     time_t cur = time(NULL);
     timer->expire = cur + 3 * TIMESLOT;
-    timer_lst.adjust_timer(timer);
+    utils.m_timer_lst.adjust_timer(timer);
 
     LOG_INFO("%s", "adjust timer once");
 }
@@ -190,7 +195,7 @@ void WebServer::deal_timer(util_timer *timer, int sockfd)
     timer->cb_func(&users_timer[sockfd]);
     if (timer)
     {
-        timer_lst.del_timer(timer);
+        utils.m_timer_lst.del_timer(timer);
     }
 
     LOG_INFO("close fd %d", users_timer[sockfd].sockfd);
@@ -240,7 +245,7 @@ bool WebServer::dealclinetdata()
     return true;
 }
 
-bool WebServer::dealwithsignal(bool& timeout, bool& stop_server)
+bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
 {
     int ret = 0;
     int sig;
@@ -409,7 +414,7 @@ void WebServer::eventLoop()
             {
                 bool flag = dealwithsignal(timeout, stop_server);
                 if (false == flag)
-                    continue;
+                    LOG_ERROR("%s", "dealclientdata failure");
             }
             //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN)

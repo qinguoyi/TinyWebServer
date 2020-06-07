@@ -77,7 +77,6 @@ public:
     int m_CONNTrigmode;
 
     //定时器相关
-    sort_timer_lst timer_lst;
     client_data *users_timer;
     Utils utils;
 };
