@@ -45,6 +45,29 @@ void WebServer::init(int port, string user, string passWord, string databaseName
     m_actormodel = actor_model;
 }
 
+void WebServer::trig_mode(){
+    //LT + LT
+    if(0 == m_TRIGMode){
+        m_LISTENTrigmode = 0;
+        m_CONNTrigmode = 0;
+    }
+    //LT + ET
+    else if(1 == m_TRIGMode){
+        m_LISTENTrigmode = 0;
+        m_CONNTrigmode = 1;
+    }
+    //ET + LT
+    else if(2 == m_TRIGMode){
+        m_LISTENTrigmode = 1;
+        m_CONNTrigmode = 0;
+    }
+    //ET + ET
+    else if(3 == m_TRIGMode){
+        m_LISTENTrigmode = 1;
+        m_CONNTrigmode = 1;
+    }
+}
+
 void WebServer::log_write()
 {
     if (0 == m_close_log)
@@ -119,13 +142,13 @@ void WebServer::eventListen()
     m_epollfd = epoll_create(5);
     assert(m_epollfd != -1);
 
-    utils.addfd(m_epollfd, m_listenfd, false, m_TRIGMode);
+    utils.addfd(m_epollfd, m_listenfd, false, m_LISTENTrigmode);
     http_conn::m_epollfd = m_epollfd;
 
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, m_pipefd);
     assert(ret != -1);
     utils.setnonblocking(m_pipefd[1]);
-    utils.addfd(m_epollfd, m_pipefd[0], false, m_TRIGMode);
+    utils.addfd(m_epollfd, m_pipefd[0], false, 0);
 
     utils.addsig(SIGPIPE, SIG_IGN);
     utils.addsig(SIGALRM, utils.sig_handler, false);
@@ -136,7 +159,7 @@ void WebServer::eventListen()
 
 void WebServer::timer(int connfd, struct sockaddr_in client_address)
 {
-    users[connfd].init(connfd, client_address, m_root, m_SQLVerify, m_TRIGMode, m_close_log, m_user, m_passWord, m_databaseName);
+    users[connfd].init(connfd, client_address, m_root, m_SQLVerify, m_CONNTrigmode, m_close_log, m_user, m_passWord, m_databaseName);
 
     //初始化client_data数据
     //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
@@ -177,7 +200,7 @@ bool WebServer::dealclinetdata()
 {
     struct sockaddr_in client_address;
     socklen_t client_addrlength = sizeof(client_address);
-    if (0 == m_TRIGMode)
+    if (0 == m_LISTENTrigmode)
     {
         int connfd = accept(m_listenfd, (struct sockaddr *)&client_address, &client_addrlength);
         if (connfd < 0)

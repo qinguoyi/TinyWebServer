@@ -237,22 +237,40 @@ bool http_conn::read_once()
         return false;
     }
     int bytes_read = 0;
-    while (true)
+
+    //LT读取数据
+    if (0 == m_TRIGMode)
     {
         bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
-        if (bytes_read == -1)
-        {
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-                break;
-            return false;
-        }
-        else if (bytes_read == 0)
-        {
-            return false;
-        }
         m_read_idx += bytes_read;
+
+        if (bytes_read <= 0)
+        {
+            return false;
+        }
+
+        return true;
     }
-    return true;
+    //ET读数据
+    else
+    {
+        while (true)
+        {
+            bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
+            if (bytes_read == -1)
+            {
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    break;
+                return false;
+            }
+            else if (bytes_read == 0)
+            {
+                return false;
+            }
+            m_read_idx += bytes_read;
+        }
+        return true;
+    }
 }
 
 //解析http请求行，获得请求方法，目标url及http版本号

@@ -32,7 +32,7 @@ public:
     void thread_pool();
     void sql_pool();
     void log_write();
-
+    void trig_mode();
     void eventListen();
     void eventLoop();
     void timer(int connfd, struct sockaddr_in client_address);
@@ -73,6 +73,8 @@ public:
     int m_listenfd;
     int m_OPT_LINGER;
     int m_TRIGMode;
+    int m_LISTENTrigmode;
+    int m_CONNTrigmode;
 
     //定时器相关
     sort_timer_lst timer_lst;
