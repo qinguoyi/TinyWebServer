@@ -19,13 +19,8 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <sys/uio.h>
-#include <map>
-
 #include "../lock/locker.h"
 #include "../CGImysql/sql_connection_pool.h"
-#include "../timer/lst_timer.h"
-#include "../log/log.h"
-
 class http_conn
 {
 public:
@@ -73,7 +68,7 @@ public:
     ~http_conn() {}
 
 public:
-    void init(int sockfd, const sockaddr_in &addr, char *, int, int, string user, string passwd, string sqlname);
+    void init(int sockfd, const sockaddr_in &addr);
     void close_conn(bool real_close = true);
     void process();
     bool read_once();
@@ -83,9 +78,7 @@ public:
         return &m_address;
     }
     void initmysql_result(connection_pool *connPool);
-    int timer_flag;
-    int improv;
-
+    void initresultFile(connection_pool *connPool);
 
 private:
     void init();
@@ -111,7 +104,6 @@ public:
     static int m_epollfd;
     static int m_user_count;
     MYSQL *mysql;
-    int m_state;  //读为0, 写为1
 
 private:
     int m_sockfd;
@@ -138,15 +130,6 @@ private:
     char *m_string; //存储请求头数据
     int bytes_to_send;
     int bytes_have_send;
-    char *doc_root;
-
-    map<string, string> m_users;
-    int m_TRIGMode;
-    int m_close_log;
-
-    char sql_user[100];
-    char sql_passwd[100];
-    char sql_name[100];
 };
 
 #endif
