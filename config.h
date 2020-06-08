@@ -16,9 +16,6 @@ public:
     //端口号
     int PORT;
 
-    //数据库校验方式
-    int SQLVerify;
-
     //日志写入方式
     int LOGWrite;
 

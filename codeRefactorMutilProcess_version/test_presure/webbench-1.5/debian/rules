@@ -1,0 +1,64 @@
+#!/usr/bin/make -f
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# This is the debhelper compatability version to use.
+export DH_COMPAT=3
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	touch configure-stamp
+
+build: configure-stamp build-stamp
+build-stamp:
+	dh_testdir
+	$(MAKE)
+	touch build-stamp
+
+clean:
+	dh_testdir
+	rm -f build-stamp configure-stamp
+
+	# Add here commands to clean up after the build process.
+	-$(MAKE) clean
+
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	# Add here commands to install the package into debian/webbench.
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/webbench
+
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installdocs
+	dh_installman webbench.1
+	dh_installchangelogs 
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+#	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure

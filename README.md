@@ -28,7 +28,7 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
 > * [定时器处理非活动连接](https://github.com/qinguoyi/TinyWebServer/tree/master/timer)
 > * [同步/异步日志系统 ](https://github.com/qinguoyi/TinyWebServer/tree/master/log)  
 > * [数据库连接池](https://github.com/qinguoyi/TinyWebServer/tree/master/CGImysql) 
-> * [CGI及同步线程注册和登录校验](https://github.com/qinguoyi/TinyWebServer/tree/master/CGImysql) 
+> * [同步线程注册和登录校验](https://github.com/qinguoyi/TinyWebServer/tree/master/CGImysql) 
 > * [简易服务器压力测试](https://github.com/qinguoyi/TinyWebServer/tree/master/test_presure)
 
 
@@ -90,7 +90,6 @@ Demo演示
 - [x] 解决请求服务器上大文件的Bug
 - [x] 增加请求视频文件的页面
 - [x] 解决数据库同步校验内存泄漏
-- [x] 实现两种CGI数据库访问逻辑
 - [x] 实现非阻塞模式下的ET和LT触发，并完成压力测试
 - [x] 完善`lock.h`中的封装类，统一使用该同步机制
 - [x] 改进代码结构，更新局部变量懒汉单例模式
@@ -174,17 +173,13 @@ Demo演示
 ------
 
 ```C++
-./server [-p port] [-v SQLVerify] [-l LOGWrite] [-m TRIGMode] [-o OPT_LINGER] [-s sql_num] [-t thread_num] [-c close_log] [-a actor_model]
+./server [-p port] [-l LOGWrite] [-m TRIGMode] [-o OPT_LINGER] [-s sql_num] [-t thread_num] [-c close_log] [-a actor_model]
 ```
 
 温馨提示:以上参数不是非必须，不用全部使用，根据个人情况搭配选用即可.
 
 * -p，自定义端口号
 	* 默认9006
-* -v，选择数据库校验方式，默认同步校验
-	* 0，同步校验，使用连接池
-	* 1，CGI校验，使用连接池
-	* 2，CGI校验，不使用连接池
 * -l，选择日志写入方式，默认同步写入
 	* 0，同步写入
 	* 1，异步写入
@@ -210,11 +205,10 @@ Demo演示
 测试示例命令与含义
 
 ```C++
-./server -p 9007 -v 1 -l 1 -m 0 -o 1 -s 10 -t 10 -c 1 -a 1
+./server -p 9007 -l 1 -m 0 -o 1 -s 10 -t 10 -c 1 -a 1
 ```
 
 - [x] 端口9007
-- [x] CGI校验，使用连接池
 - [x] 异步写入日志
 - [x] 使用LT + LT组合
 - [x] 使用优雅关闭连接
