@@ -20,13 +20,11 @@
 #define MAX_EVENT_NUMBER 10000 //最大事件数
 #define TIMESLOT 5             //最小超时单位
 
-#define SYNSQL //同步数据库校验
-//#define CGISQLPOOL    //CGI数据库校验
-#define SYNLOG //同步写日志
-//#define ASYNLOG       //异步写日志
+#define SYNLOG  //同步写日志
+//#define ASYNLOG //异步写日志
 
-//#define ET            //边缘触发非阻塞
-#define LT //水平触发阻塞
+//#define listenfdET //边缘触发非阻塞
+#define listenfdLT //水平触发阻塞
 
 //这三个函数在http_conn.cpp中定义，改变链接属性
 extern int addfd(int epollfd, int fd, bool one_shot);
@@ -87,7 +85,6 @@ void show_error(int connfd, const char *info)
 
 int main(int argc, char *argv[])
 {
-
 #ifdef ASYNLOG
     Log::get_instance()->init("ServerLog", 2000, 800000, 8); //异步日志模型
 #endif
@@ -108,7 +105,7 @@ int main(int argc, char *argv[])
 
     //创建数据库连接池
     connection_pool *connPool = connection_pool::GetInstance();
-    connPool->init("localhost", "root", "root", "yourdb", 3306, 8);
+    connPool->init("localhost", "root", "root", "qgydb", 3306, 8);
 
     //创建线程池
     threadpool<http_conn> *pool = NULL;
@@ -124,17 +121,9 @@ int main(int argc, char *argv[])
     http_conn *users = new http_conn[MAX_FD];
     assert(users);
 
-#ifdef SYNSQL
     //初始化数据库读取表
     users->initmysql_result(connPool);
-#endif
 
-#ifdef CGISQLPOOL
-    //初始化数据库读取表
-    users->initresultFile(connPool);
-#endif
-
- 
     int listenfd = socket(PF_INET, SOCK_STREAM, 0);
     assert(listenfd >= 0);
 
@@ -148,7 +137,6 @@ int main(int argc, char *argv[])
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_ANY);
     address.sin_port = htons(port);
-
 
     int flag = 1;
     setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
@@ -198,7 +186,7 @@ int main(int argc, char *argv[])
             {
                 struct sockaddr_in client_address;
                 socklen_t client_addrlength = sizeof(client_address);
-#ifdef LT
+#ifdef listenfdLT
                 int connfd = accept(listenfd, (struct sockaddr *)&client_address, &client_addrlength);
                 if (connfd < 0)
                 {
@@ -226,7 +214,7 @@ int main(int argc, char *argv[])
                 timer_lst.add_timer(timer);
 #endif
 
-#ifdef ET
+#ifdef listenfdET
                 while (1)
                 {
                     int connfd = accept(listenfd, (struct sockaddr *)&client_address, &client_addrlength);
@@ -264,7 +252,7 @@ int main(int argc, char *argv[])
                 //服务器端关闭连接，移除对应的定时器
                 util_timer *timer = users_timer[sockfd].timer;
                 timer->cb_func(&users_timer[sockfd]);
-                
+
                 if (timer)
                 {
                     timer_lst.del_timer(timer);
