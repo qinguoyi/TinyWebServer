@@ -4,8 +4,11 @@
 #include <mysql/mysql.h>
 #include <fstream>
 
-//#define connfdET       //边缘触发非阻塞
-#define connfdLT         //水平触发阻塞
+#define connfdET //边缘触发非阻塞
+//#define connfdLT //水平触发阻塞
+
+//#define listenfdET //边缘触发非阻塞
+#define listenfdLT //水平触发阻塞
 
 //定义http响应的一些状态信息
 const char *ok_200_title = "OK";
@@ -75,6 +78,14 @@ void addfd(int epollfd, int fd, bool one_shot)
 #endif
 
 #ifdef connfdLT
+    event.events = EPOLLIN | EPOLLRDHUP;
+#endif
+
+#ifdef listenfdET
+    event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
+#endif
+
+#ifdef listenfdLT
     event.events = EPOLLIN | EPOLLRDHUP;
 #endif
 

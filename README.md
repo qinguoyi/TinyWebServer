@@ -81,7 +81,13 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
 	    26 //#define listenfdET       //边缘触发非阻塞
 	    27 #define listenfdLT         //水平触发阻塞
 	    ```
-	
+	* listenfd触发模式，关闭http_conn.cpp中listenfdET，打开listenfdLT
+	    
+	    ```C++
+	    10 //#define listenfdET       //边缘触发非阻塞
+	    11 #define listenfdLT         //水平触发阻塞
+	    ```
+
 	* connfd触发模式，关闭http_conn.cpp中connfdET，打开connfdLT
 	    
 	    ```C++
@@ -90,13 +96,20 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
 	    ```
 
 - [ ] LT + ET模式
-	* listenfd触发模式，打开main.c中listenfdET，关闭listenfdLT
+	* listenfd触发模式，关闭main.c中listenfdET，打开listenfdLT
 	    
 	    ```C++
 	    26 //#define listenfdET       //边缘触发非阻塞
 	    27 #define listenfdLT         //水平触发阻塞
 	    ```
 	
+	* listenfd触发模式，关闭http_conn.cpp中listenfdET，打开listenfdLT
+	    
+	    ```C++
+	    10 //#define listenfdET       //边缘触发非阻塞
+	    11 #define listenfdLT         //水平触发阻塞
+	    ```
+
 	* connfd触发模式，打开http_conn.cpp中connfdET，关闭connfdLT
 	    
 	    ```C++
