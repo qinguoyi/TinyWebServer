@@ -108,10 +108,10 @@ Demo演示
 
 如果遇到github代码下载失败，或访问太慢，可以从以下链接下载，与Github最新提交同步.
 
-* 重构版本下载地址 : [BaiduYun](https://pan.baidu.com/s/1dFdDR3QDbIXX71C2OJ-x2g)
-    * 提取码 : hr8n
-* 原始版本(raw_version)下载地址 : [BaiduYun](https://pan.baidu.com/s/1-icglZGmz8cYqGCZhsN78A)
-    * 提取码 : 496d
+* 重构版本下载地址 : [BaiduYun](链接: https://pan.baidu.com/s/1PozKji8Oop-1BYcfixZR0g)
+    *  提取码 : vsqq
+* 原始版本(raw_version)下载地址 : [BaiduYun](https://pan.baidu.com/s/1asMNDW-zog92DZY1Oa4kaQ)
+    * 提取码 : 9wye
     * 原始版本运行请参考[原始文档](https://github.com/qinguoyi/TinyWebServer/tree/raw_version)
 
 快速运行
