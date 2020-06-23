@@ -132,10 +132,6 @@ void WebServer::eventListen()
     ret = listen(m_listenfd, 5);
     assert(ret >= 0);
 
-    //工具类,信号和描述符基础操作
-    Utils::u_pipefd = m_pipefd;
-    Utils::u_epollfd = m_epollfd;
-
     utils.init(TIMESLOT);
 
     //epoll创建内核事件表
@@ -156,6 +152,10 @@ void WebServer::eventListen()
     utils.addsig(SIGTERM, utils.sig_handler, false);
 
     alarm(TIMESLOT);
+
+    //工具类,信号和描述符基础操作
+    Utils::u_pipefd = m_pipefd;
+    Utils::u_epollfd = m_epollfd;
 }
 
 void WebServer::timer(int connfd, struct sockaddr_in client_address)
