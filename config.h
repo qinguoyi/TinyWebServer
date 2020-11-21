@@ -1,3 +1,11 @@
+/*
+ * @Author: your name
+ * @Date: 2020-11-21 15:55:51
+ * @LastEditTime: 2020-11-21 18:55:54
+ * @LastEditors: your name
+ * @Description: In User Settings Edit
+ * @FilePath: \MiniWebServerd:\my_project\TinyWebServer\config.h
+ */
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -11,7 +19,7 @@ public:
     Config();
     ~Config(){};
 
-    void parse_arg(int argc, char*argv[]);
+    void parse_arg(int argc, char *argv[]);
 
     //端口号
     int PORT;

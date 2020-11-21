@@ -99,7 +99,7 @@ void sort_timer_lst::tick()
     {
         return;
     }
-    
+
     time_t cur = time(NULL);
     util_timer *tmp = head;
     while (tmp)
