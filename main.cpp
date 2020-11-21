@@ -1,7 +1,11 @@
 #include "config.h"
+#include <unistd.h>
 
 int main(int argc, char *argv[])
 {
+    //将下句代码取消注释即可将此程序以守护进程运行
+    //daemon(1,0);
+
     //需要修改的数据库信息,登录名,密码,库名
     string user = "root";
     string passwd = "root";
@@ -14,10 +18,9 @@ int main(int argc, char *argv[])
     WebServer server;
 
     //初始化
-    server.init(config.PORT, user, passwd, databasename, config.LOGWrite, 
-                config.OPT_LINGER, config.TRIGMode,  config.sql_num,  config.thread_num, 
+    server.init(config.PORT, user, passwd, databasename, config.LOGWrite,
+                config.OPT_LINGER, config.TRIGMode, config.sql_num, config.thread_num,
                 config.close_log, config.actor_model);
-    
 
     //日志
     server.log_write();

@@ -1,6 +1,8 @@
 #include "config.h"
+#include <stdlib.h>
 
-Config::Config(){
+Config::Config()
+{
     //端口号,默认9006
     PORT = 9006;
 
@@ -32,7 +34,8 @@ Config::Config(){
     actor_model = 0;
 }
 
-void Config::parse_arg(int argc, char*argv[]){
+void Config::parse_arg(int argc, char *argv[])
+{
     int opt;
     const char *str = "p:l:m:o:s:t:c:a:";
     while ((opt = getopt(argc, argv, str)) != -1)
@@ -80,7 +83,7 @@ void Config::parse_arg(int argc, char*argv[]){
             break;
         }
         default:
-            break;
+            exit(EXIT_FAILURE);
         }
     }
 }
