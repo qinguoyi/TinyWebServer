@@ -24,7 +24,7 @@ Log::~Log()
     {
         delete [] m_buf;
     }
-    if (m_log_queue)
+    if (m_log_queue != NULL)
     {
         delete m_log_queue;
     }
