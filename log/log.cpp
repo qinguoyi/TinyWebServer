@@ -10,6 +10,8 @@ Log::Log()
 {
     m_count = 0;
     m_is_async = false;
+    m_buf = NULL;
+    m_log_queue = NULL;
 }
 
 Log::~Log()
@@ -17,6 +19,14 @@ Log::~Log()
     if (m_fp != NULL)
     {
         fclose(m_fp);
+    }
+    if (m_buf != NULL)
+    {
+        delete [] m_buf;
+    }
+    if (m_log_queue)
+    {
+        delete m_log_queue;
     }
 }
 //异步需要设置阻塞队列的长度，同步不需要设置
