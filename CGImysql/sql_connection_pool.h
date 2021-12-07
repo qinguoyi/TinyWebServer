@@ -8,8 +8,8 @@
 #include <string.h>
 #include <iostream>
 #include <string>
-#include "../lock/locker.h"
-#include "../log/log.h"
+#include "lock/locker.h"
+#include "log/log.h"
 
 using namespace std;
 

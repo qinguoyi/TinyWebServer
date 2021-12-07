@@ -1,0 +1,3 @@
+# verbose
+build --announce_rc
+build --verbose_failures

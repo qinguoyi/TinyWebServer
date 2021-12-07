@@ -22,7 +22,7 @@
 #include <sys/uio.h>
 
 #include <time.h>
-#include "../log/log.h"
+#include "log/log.h"
 
 class util_timer;
 
