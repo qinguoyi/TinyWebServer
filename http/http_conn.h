@@ -78,7 +78,7 @@ public:
     void process();
     bool read_once();
     bool write();
-    sockaddr_in *get_address()
+    sockaddr_in* get_address()
     {
         return &m_address;
     }
@@ -95,7 +95,7 @@ private:
     HTTP_CODE parse_headers(char *text);
     HTTP_CODE parse_content(char *text);
     HTTP_CODE do_request();
-    char *get_line() { return m_read_buf + m_start_line; };
+    char* get_line() { return m_read_buf + m_start_line; };
     LINE_STATUS parse_line();
     void unmap();
     bool add_response(const char *format, ...);
@@ -110,39 +110,39 @@ private:
 public:
     static int m_epollfd;
     static int m_user_count;
-    MYSQL *mysql;
-    int m_state;  //读为0, 写为1
+    MYSQL*     mysql;
+    int        m_state; //读为0, 写为1
 
 private:
-    int m_sockfd;
-    sockaddr_in m_address;
-    char m_read_buf[READ_BUFFER_SIZE];
-    int m_read_idx;
-    int m_checked_idx;
-    int m_start_line;
-    char m_write_buf[WRITE_BUFFER_SIZE];
-    int m_write_idx;
-    CHECK_STATE m_check_state;
-    METHOD m_method;
-    char m_real_file[FILENAME_LEN];
-    char *m_url;
-    char *m_version;
-    char *m_host;
-    int m_content_length;
-    bool m_linger;
-    char *m_file_address;
-    struct stat m_file_stat;
+    int          m_sockfd;
+    sockaddr_in  m_address;
+    char         m_read_buf[READ_BUFFER_SIZE];
+    int          m_read_idx;
+    int          m_checked_idx;
+    int          m_start_line;
+    char         m_write_buf[WRITE_BUFFER_SIZE];
+    int          m_write_idx;
+    CHECK_STATE  m_check_state;
+    METHOD       m_method;
+    char         m_real_file[FILENAME_LEN];
+    char*        m_url;
+    char*        m_version;
+    char*        m_host;
+    int          m_content_length;
+    bool         m_linger;
+    char*        m_file_address;
+    struct stat  m_file_stat;
     struct iovec m_iv[2];
-    int m_iv_count;
-    int cgi;        //是否启用的POST
-    char *m_string; //存储请求头数据
-    int bytes_to_send;
-    int bytes_have_send;
-    char *doc_root;
+    int          m_iv_count;
+    int          cgi;      //是否启用的POST
+    char*        m_string; //存储请求头数据
+    int          bytes_to_send;
+    int          bytes_have_send;
+    char*        doc_root;
 
     map<string, string> m_users;
-    int m_TRIGMode;
-    int m_close_log;
+    int                 m_TRIGMode;
+    int                 m_close_log;
 
     char sql_user[100];
     char sql_passwd[100];

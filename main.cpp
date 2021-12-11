@@ -1,4 +1,4 @@
-#include "config.h"
+#include "./config.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,10 +14,10 @@ int main(int argc, char *argv[])
     WebServer server;
 
     //初始化
-    server.init(config.PORT, user, passwd, databasename, config.LOGWrite, 
-                config.OPT_LINGER, config.TRIGMode,  config.sql_num,  config.thread_num, 
+    server.init(config.PORT, user, passwd, databasename, config.LOGWrite,
+                config.OPT_LINGER, config.TRIGMode,  config.sql_num,  config.thread_num,
                 config.close_log, config.actor_model);
-    
+
 
     //日志
     server.log_write();
