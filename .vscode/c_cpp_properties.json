@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "linux-x64",
             "includePath": [
                 "${workspaceFolder}/**",
                 "C:/Users/YY/Desktop/Code/ubuntu_header/include",
