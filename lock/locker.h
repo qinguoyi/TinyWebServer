@@ -54,9 +54,7 @@ public:
             throw std::exception();
         }
     }
-    ~cond() {
-        pthread_cond_destroy(&m_cond);
-    }
+    ~cond() { pthread_cond_destroy(&m_cond); }
     bool wait(pthread_mutex_t *m_mutex) {
         int ret = 0;
         //pthread_mutex_lock(&m_mutex);
