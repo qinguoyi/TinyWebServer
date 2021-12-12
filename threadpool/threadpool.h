@@ -33,8 +33,12 @@ private:
     connection_pool* m_connPool;      // 数据库
     int              m_actor_model;   // 模型切换
 };
+
 template <typename T>
-threadpool<T>::threadpool( int actor_model, connection_pool *connPool, int thread_number, int max_requests) : m_actor_model(actor_model),m_thread_number(thread_number), m_max_requests(max_requests), m_threads(NULL),m_connPool(connPool)
+threadpool<T>::threadpool( int actor_model, connection_pool *connPool,
+                           int thread_number, int max_requests)
+    : m_actor_model(actor_model),m_thread_number(thread_number),
+    m_max_requests(max_requests), m_connPool(connPool), m_threads(NULL)
 {
     if (thread_number <= 0 || max_requests <= 0)
         throw std::exception();
@@ -55,11 +59,13 @@ threadpool<T>::threadpool( int actor_model, connection_pool *connPool, int threa
         }
     }
 }
+
 template <typename T>
 threadpool<T>::~threadpool()
 {
     delete[] m_threads;
 }
+
 template <typename T>
 bool threadpool<T>::append(T *request, int state)
 {

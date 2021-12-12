@@ -91,10 +91,10 @@ public:
     void show_error(int connfd, const char *info);
 
 public:
-    static int *u_pipefd;
+    static int*    u_pipefd;
     sort_timer_lst m_timer_lst;
-    static int u_epollfd;
-    int m_TIMESLOT;
+    static int     u_epollfd;
+    int            m_TIMESLOT;
 };
 
 void cb_func(client_data *user_data);
