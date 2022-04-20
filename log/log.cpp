@@ -27,8 +27,9 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
     {
         m_is_async = true;
         m_log_queue = new block_queue<string>(max_queue_size);
+        // thread id
         pthread_t tid;
-        //flush_log_thread为回调函数,这里表示创建线程异步写日志
+        // tid will store the id of the new spawn thread
         pthread_create(&tid, NULL, flush_log_thread, NULL);
     }
     
@@ -158,7 +159,7 @@ void Log::write_log(int level, const char *format, ...)
 void Log::flush(void)
 {
     m_mutex.lock();
-    //强制刷新写入流缓冲区
+    // flush to the disk, so the log is updated(can be operated) without needing to fclose then fopen
     fflush(m_fp);
     m_mutex.unlock();
 }
