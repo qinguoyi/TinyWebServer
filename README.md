@@ -53,7 +53,7 @@ Demo演示
 
 > * 登录演示
 
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0izcc0r1g30m80bxn6a.gif" height="429"/> </div>
+<div align=center><img src="https://github.com/qinguoyi/TinyWebServer/blob/master/root/login.gif" height="429"/> </div>
 
 > * 请求图片文件演示(6M)
 
