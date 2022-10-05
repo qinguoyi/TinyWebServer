@@ -25,8 +25,8 @@ public:
     WebServer();
     ~WebServer();
 
-    void init(int port , string user, string passWord, string databaseName,
-              int log_write , int opt_linger, int trigmode, int sql_num,
+    void init(int port, string user, string passWord, string databaseName,
+              int log_write, int opt_linger, int trigmode, int sql_num,
               int thread_num, int close_log, int actor_model);
 
     void thread_pool();
@@ -39,7 +39,7 @@ public:
     void adjust_timer(util_timer *timer);
     void deal_timer(util_timer *timer, int sockfd);
     bool dealclinetdata();
-    bool dealwithsignal(bool& timeout, bool& stop_server);
+    bool dealwithsignal(bool &timeout, bool &stop_server);
     void dealwithread(int sockfd);
     void dealwithwrite(int sockfd);
 

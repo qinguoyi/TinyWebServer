@@ -11,7 +11,7 @@ public:
     Config();
     ~Config(){};
 
-    void parse_arg(int argc, char*argv[]);
+    void parse_arg(int argc, char *argv[]);
 
     //端口号
     int PORT;

@@ -8,6 +8,19 @@
 #include "../lock/locker.h"
 #include "../CGImysql/sql_connection_pool.h"
 
+/*
+ * m_thread_number 线程池中的线程数
+   m_max_requests 请求队列中允许的最大请求数
+   m_threads 描述线程池的数组，其大小为m_thread_number
+   m_workqueue 请求队列
+   m_queuelocker 保护请求队列的互斥锁
+   m_queuestat 是否有任务需要处理
+   m_connPool 数据库
+   m_actor_model 模型切换
+ * worker 工作线程运行的函数
+   run 工作线程的真正运行函数，它不断从工作队列中取出任务并执行
+ * append 往请求队列中添加任务
+ */
 template <typename T>
 class threadpool
 {
@@ -24,17 +37,17 @@ private:
     void run();
 
 private:
-    int m_thread_number;        //线程池中的线程数
-    int m_max_requests;         //请求队列中允许的最大请求数
-    pthread_t *m_threads;       //描述线程池的数组，其大小为m_thread_number
-    std::list<T *> m_workqueue; //请求队列
-    locker m_queuelocker;       //保护请求队列的互斥锁
-    sem m_queuestat;            //是否有任务需要处理
-    connection_pool *m_connPool;  //数据库
-    int m_actor_model;          //模型切换
+    int m_thread_number;         //线程池中的线程数
+    int m_max_requests;          //请求队列中允许的最大请求数
+    pthread_t *m_threads;        //描述线程池的数组，其大小为m_thread_number
+    std::list<T *> m_workqueue;  //请求队列
+    locker m_queuelocker;        //保护请求队列的互斥锁
+    sem m_queuestat;             //是否有任务需要处理
+    connection_pool *m_connPool; //数据库
+    int m_actor_model;           //模型切换
 };
 template <typename T>
-threadpool<T>::threadpool( int actor_model, connection_pool *connPool, int thread_number, int max_requests) : m_actor_model(actor_model),m_thread_number(thread_number), m_max_requests(max_requests), m_threads(NULL),m_connPool(connPool)
+threadpool<T>::threadpool(int actor_model, connection_pool *connPool, int thread_number, int max_requests) : m_actor_model(actor_model), m_thread_number(thread_number), m_max_requests(max_requests), m_threads(NULL), m_connPool(connPool)
 {
     if (thread_number <= 0 || max_requests <= 0)
         throw std::exception();

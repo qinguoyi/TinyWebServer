@@ -58,7 +58,6 @@ void connection_pool::init(string url, string User, string PassWord, string DBNa
 	m_MaxConn = m_FreeConn;
 }
 
-
 //当有请求时，从数据库连接池中返回一个可用连接，更新使用和空闲连接数
 MYSQL *connection_pool::GetConnection()
 {
@@ -68,7 +67,7 @@ MYSQL *connection_pool::GetConnection()
 		return NULL;
 
 	reserve.wait();
-	
+
 	lock.lock();
 
 	con = connList.front();
@@ -131,13 +130,15 @@ connection_pool::~connection_pool()
 	DestroyPool();
 }
 
-connectionRAII::connectionRAII(MYSQL **SQL, connection_pool *connPool){
+connectionRAII::connectionRAII(MYSQL **SQL, connection_pool *connPool)
+{
 	*SQL = connPool->GetConnection();
-	
+
 	conRAII = *SQL;
 	poolRAII = connPool;
 }
 
-connectionRAII::~connectionRAII(){
+connectionRAII::~connectionRAII()
+{
 	poolRAII->ReleaseConnection(conRAII);
 }
