@@ -216,12 +216,13 @@ bool http_conn::read_once()
 #ifdef connfdLT
 
     bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
-    m_read_idx += bytes_read;
 
     if (bytes_read <= 0)
     {
         return false;
     }
+
+    m_read_idx += bytes_read;
 
     return true;
 
