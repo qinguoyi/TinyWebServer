@@ -1,4 +1,4 @@
-CFLAGS?=	-Wall -ggdb -W -O
+CFLAGS?=	-Wall -Wno-unused-parameter -ggdb -W -O
 CC?=		gcc
 LIBS?=
 LDFLAGS?=
