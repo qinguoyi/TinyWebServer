@@ -134,7 +134,7 @@ void Log::write_log(int level, const char *format, ...)
                      my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday,
                      my_tm.tm_hour, my_tm.tm_min, my_tm.tm_sec, now.tv_usec, s);
     
-    int m = vsnprintf(m_buf + n, m_log_buf_size - 1, format, valst);
+    int m = vsnprintf(m_buf + n, m_log_buf_size - n - 1, format, valst);
     m_buf[n + m] = '\n';
     m_buf[n + m + 1] = '\0';
     log_str = m_buf;
