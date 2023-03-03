@@ -83,7 +83,7 @@ public:
     static void sig_handler(int sig);
 
     //设置信号函数
-    void addsig(int sig, void(handler)(int), bool restart = true);
+    void addsig(int sig, void(*handler)(int), bool restart = true);
 
     //定时处理任务，重新定时以不断触发SIGALRM信号
     void timer_handler();
