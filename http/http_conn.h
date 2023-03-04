@@ -117,8 +117,8 @@ private:
     int m_sockfd;
     sockaddr_in m_address;
     char m_read_buf[READ_BUFFER_SIZE];
-    int m_read_idx;
-    int m_checked_idx;
+    long m_read_idx;
+    long m_checked_idx;
     int m_start_line;
     char m_write_buf[WRITE_BUFFER_SIZE];
     int m_write_idx;
@@ -128,7 +128,7 @@ private:
     char *m_url;
     char *m_version;
     char *m_host;
-    int m_content_length;
+    long m_content_length;
     bool m_linger;
     char *m_file_address;
     struct stat m_file_stat;
