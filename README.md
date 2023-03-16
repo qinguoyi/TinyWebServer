@@ -10,6 +10,7 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
 * 实现**同步/异步日志系统**，记录服务器运行状态
 * 经Webbench压力测试可以实现**上万的并发连接**数据交换
 
+
 写在前面
 ----
 * 本项目开发维护过程中，很多童鞋曾发红包支持，我都一一谢绝。我现在不会，将来也不会将本项目包装成任何课程售卖，更不会开通任何支持通道。
@@ -246,9 +247,14 @@ Demo演示
 * [最新版Web服务器项目详解 - 13 踩坑与面试题](https://mp.weixin.qq.com/s?__biz=MzAxNzU2MzcwMw==&mid=2649274431&idx=1&sn=2dd28c92f5d9704a57c001a3d2630b69&chksm=83ffb167b48838715810b27b8f8b9a576023ee5c08a8e5d91df5baf396732de51268d1bf2a4e&token=1686112912&lang=zh_CN#rd)
 * 已更新完毕
 
+Star History
+---------
+[![Star History Chart](https://api.star-history.com/svg?repos=qinguoyi/TinyWebServer&type=Date)](https://star-history.com/#qinguoyi/TinyWebServer&Date)
+
 CPP11实现
 ------------
 更简洁，更优雅的CPP11实现：[Webserver](https://github.com/markparticle/WebServer)
+
 
 致谢
 ------------
