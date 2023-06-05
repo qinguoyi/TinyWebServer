@@ -22,7 +22,7 @@ Linux下C++轻量级Web服务器，助力初学者快速实践网络编程，搭
 
 项目速递
 ----------
-最近新写了一个Go语言的练手项目[osproxy](github.com/qinguoyi/osproxy)和[osproxy-grpc](github.com/qinguoyi/osproxy-grpc)，代码已完全开源。 
+最近新写了一个Go语言的练手项目[osproxy](https://github.com/qinguoyi/osproxy)和[osproxy-grpc](https://github.com/qinguoyi/osproxy-grpc)，代码已完全开源。 
 * **最简单的应用就是，你可以拿他部署自己的图床，或者一个简单的云盘，也可以作为文件存储微服务**。 
 *  如果你正在学习Go语言，对S3对象存储感兴趣，欢迎star，欢迎交流。
 
