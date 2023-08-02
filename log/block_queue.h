@@ -82,7 +82,8 @@ public:
             m_mutex.unlock();
             return false;
         }
-        value = m_array[m_front];
+        int pos = (m_front + 1) % m_max_size;
+        value = m_array[pos];
         m_mutex.unlock();
         return true;
     }
