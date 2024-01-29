@@ -638,7 +638,7 @@ bool http_conn::process_write(HTTP_CODE ret)
             return false;
         break;
     }
-    case BAD_REQUEST:
+    case NO_RESOURCE:
     {
         add_status_line(404, error_404_title);
         add_headers(strlen(error_404_form));
