@@ -71,6 +71,7 @@ void sort_timer_lst::del_timer(util_timer *timer)
     if ((timer == head) && (timer == tail))
     {
         delete timer;
+        timer = nullptr;
         head = NULL;
         tail = NULL;
         return;
@@ -80,6 +81,7 @@ void sort_timer_lst::del_timer(util_timer *timer)
         head = head->next;
         head->prev = NULL;
         delete timer;
+        timer = nullptr;
         return;
     }
     if (timer == tail)
@@ -87,11 +89,13 @@ void sort_timer_lst::del_timer(util_timer *timer)
         tail = tail->prev;
         tail->next = NULL;
         delete timer;
+        timer = nullptr;
         return;
     }
     timer->prev->next = timer->next;
     timer->next->prev = timer->prev;
     delete timer;
+    timer = nullptr;
 }
 void sort_timer_lst::tick()
 {
