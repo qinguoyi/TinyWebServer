@@ -130,10 +130,19 @@ public:
         m_mutex.lock();
         if (m_size >= m_max_size)
         {
-
-            m_cond.broadcast();
-            m_mutex.unlock();
-            return false;
+            int new_max_size = m_max_size * 2;
+            T* new_array = new T[new_max_size];
+            // 复制旧队列元素到新队列
+            for (int i = 0; i < m_max_size; i++) {
+                new_array[i] = m_array[(m_front + i + 1) % m_max_size];
+            }
+            // 删除旧数组
+            delete[] m_array;
+            // 更新队列指针和大小
+            m_array = new_array;
+            m_front = -1;  // 重置队首位置
+            m_back = m_size - 1;  // 重置队尾位置
+            m_max_size = new_max_size;
         }
 
         m_back = (m_back + 1) % m_max_size;

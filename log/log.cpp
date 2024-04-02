@@ -141,7 +141,7 @@ void Log::write_log(int level, const char *format, ...)
 
     m_mutex.unlock();
 
-    if (m_is_async && !m_log_queue->full())
+    if (m_is_async)
     {
         m_log_queue->push(log_str);
     }
