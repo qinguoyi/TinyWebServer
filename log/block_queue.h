@@ -177,7 +177,11 @@ public:
         if (m_size <= 0)
         {
             t.tv_sec = now.tv_sec + ms_timeout / 1000;
-            t.tv_nsec = (ms_timeout % 1000) * 1000;
+            t.tv_nsec =  now.tv_usec * 1000 + (ms_timeout % 1000) * 1000000;
+            if (t.tv_nsec >= 1000000000) {
+              t.tv_sec++;
+              t.tv_nsec -= 1000000000;
+            }
             if (!m_cond.timewait(m_mutex.get(), t))
             {
                 m_mutex.unlock();
