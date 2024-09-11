@@ -11,7 +11,9 @@
 #include <stdlib.h>
 #include <cassert>
 #include <sys/epoll.h>
+#include <memory>
 
+#include "config.h"
 #include "./threadpool/threadpool.h"
 #include "./http/http_conn.h"
 
@@ -28,7 +30,10 @@ public:
     void init(int port , string user, string passWord, string databaseName,
               int log_write , int opt_linger, int trigmode, int sql_num,
               int thread_num, int close_log, int actor_model);
+    void init(int argc, char *argv[]);
+    void run();
 
+private:
     void thread_pool();
     void sql_pool();
     void log_write();
@@ -42,6 +47,7 @@ public:
     bool dealwithsignal(bool& timeout, bool& stop_server);
     void dealwithread(int sockfd);
     void dealwithwrite(int sockfd);
+    bool init_module();
 
 public:
     //基础
@@ -78,5 +84,11 @@ public:
     //定时器相关
     client_data *users_timer;
     Utils utils;
+    
+    //配置类
+    std::shared_ptr<Config> m_config;
+    
+    //初始化模块
+    bool m_init_module;
 };
 #endif

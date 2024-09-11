@@ -84,3 +84,41 @@ void Config::parse_arg(int argc, char*argv[]){
         }
     }
 }
+
+void Config::load_conf()
+{
+    FILE *conf_file = fopen("conf", "r");
+    assert(conf_file);
+    char buf[255];
+    while (fgets(buf, 255, conf_file) != NULL)
+    {
+        std::string line(buf);
+        bool is_comment= false;
+
+        for (auto ite = line.begin(); ite != line.end();)
+        {
+            if (*ite == ' ' || *ite == '\n' || *ite == '\t' || *ite == '\r')
+            {
+                line.erase(ite);
+            }
+            else if (*ite == '#')
+            {
+                is_comment = true;
+                break;
+            }
+            else
+            {
+                ite++;
+            }
+        }
+        if (!is_comment)
+        {
+            int pos = line.find_first_of("=");
+            if (pos != std::string::npos)
+            {
+                m_conf_map.insert({line.substr(0, pos), line.substr(pos + 1)});
+            }
+        }
+    }
+    fclose(conf_file);
+}

@@ -1,0 +1,7 @@
+# 这是一个注释,目前只能单独一行
+# 自动忽略空格，格式为 key=value
+# key value 类型默认是 std::string
+
+user = root
+passwd = root
+databasename = user_db

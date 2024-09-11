@@ -1,6 +1,7 @@
 #include "webserver.h"
+#include "config.h"
 
-WebServer::WebServer()
+WebServer::WebServer() : m_init_module(false)
 {
     //http_conn类对象
     users = new http_conn[MAX_FD];
@@ -15,6 +16,8 @@ WebServer::WebServer()
 
     //定时器
     users_timer = new client_data[MAX_FD];
+
+    m_config = std::make_shared<Config>(Config());
 }
 
 WebServer::~WebServer()
@@ -26,6 +29,33 @@ WebServer::~WebServer()
     delete[] users;
     delete[] users_timer;
     delete m_pool;
+}
+
+//读取配置，初始化参数
+void WebServer::init(int argc,char *argv[])
+{
+    m_config->parse_arg(argc,argv);
+
+    m_port = m_config->PORT ;
+    m_log_write = m_config->LOGWrite;
+    m_close_log = m_config->close_log;
+    m_OPT_LINGER = m_config->OPT_LINGER;
+    m_TRIGMode = m_config->TRIGMode;
+    m_actormodel = m_config->actor_model;
+
+    m_sql_num = m_config->sql_num;
+    m_thread_num =m_config->thread_num;
+
+    //加载配置文件
+    m_config->load_conf();
+    auto &config = m_config->m_conf_map;
+
+    m_user = config["user"];
+    m_passWord = config["passwd"];
+    m_databaseName = config["databasename"];
+
+    //初始化各个模块
+    m_init_module = init_module();
 }
 
 void WebServer::init(int port, string user, string passWord, string databaseName, int log_write, 
@@ -42,6 +72,7 @@ void WebServer::init(int port, string user, string passWord, string databaseName
     m_TRIGMode = trigmode;
     m_close_log = close_log;
     m_actormodel = actor_model;
+    m_init_module = init_module();
 }
 
 void WebServer::trig_mode()
@@ -431,4 +462,25 @@ void WebServer::eventLoop()
             timeout = false;
         }
     }
+}
+
+bool WebServer::init_module()
+{
+    // 日志
+    log_write();
+    // 数据库
+    sql_pool();
+    // 线程池
+    thread_pool();
+    // 触发模式
+    trig_mode();
+    // 监听
+    eventListen();
+
+    return true;
+}
+
+void WebServer::run()
+{
+    m_init_module ? eventLoop() : perror("Module initialization failed");
 }

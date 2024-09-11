@@ -1,9 +1,10 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "webserver.h"
-
-using namespace std;
+#include <stdlib.h>
+#include <unistd.h>
+#include <cassert>
+#include <map>
 
 class Config
 {
@@ -12,6 +13,8 @@ public:
     ~Config(){};
 
     void parse_arg(int argc, char*argv[]);
+    void load_conf();
+    std::map<std::string, std::string> m_conf_map;
 
     //端口号
     int PORT;
