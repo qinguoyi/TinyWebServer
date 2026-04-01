@@ -410,7 +410,7 @@ void WebServer::eventLoop()
             {
                 bool flag = dealwithsignal(timeout, stop_server);
                 if (false == flag)
-                    LOG_ERROR("%s", "dealclientdata failure");
+                    LOG_ERROR("%s", "dealwithsignal failure");
             }
             //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN)

@@ -116,12 +116,14 @@ void http_conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMo
     m_sockfd = sockfd;
     m_address = addr;
 
+    // Initialize trigger mode first so epoll registration uses the current connection's mode.
+    m_TRIGMode = TRIGMode;
+
     addfd(m_epollfd, sockfd, true, m_TRIGMode);
     m_user_count++;
 
     //当浏览器出现连接重置时，可能是网站根目录出错或http响应格式出错或者访问的文件中内容完全为空
     doc_root = root;
-    m_TRIGMode = TRIGMode;
     m_close_log = close_log;
 
     strcpy(sql_user, user.c_str());
