@@ -32,6 +32,8 @@ public:
     static const int FILENAME_LEN = 200;
     static const int READ_BUFFER_SIZE = 2048;
     static const int WRITE_BUFFER_SIZE = 1024;
+    
+    bool m_is_websocket;  // 标记当前连接是否已升级为 WebSocket
     enum METHOD
     {
         GET = 0,
@@ -73,6 +75,10 @@ public:
     ~http_conn() {}
 
 public:
+    // WebSocket 专用方法
+    HTTP_CODE process_websocket_handshake();
+    bool parse_ws_frame();
+    
     void init(int sockfd, const sockaddr_in &addr, char *, int, int, string user, string passwd, string sqlname);
     void close_conn(bool real_close = true);
     void process();
@@ -88,6 +94,7 @@ public:
 
 
 private:
+    std::string m_ws_key; // 暂存客户端发来的 Sec-WebSocket-Key
     void init();
     HTTP_CODE process_read();
     bool process_write(HTTP_CODE ret);

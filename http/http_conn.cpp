@@ -2,6 +2,10 @@
 
 #include <mysql/mysql.h>
 #include <fstream>
+// --- 新增：引入量化行情与 WebSocket 组件 ---
+#include "../market/TopicManager.h"
+#include "../market/SHA1.h"
+#include "../market/Base64.h"
 
 //定义http响应的一些状态信息
 const char *ok_200_title = "OK";
@@ -103,18 +107,23 @@ void http_conn::close_conn(bool real_close)
     if (real_close && (m_sockfd != -1))
     {
         printf("close %d\n", m_sockfd);
+        
+        // --- 新增：客户端断开时，从行情订阅树中清理它的 fd ---
+        TopicManager::getInstance().unsubscribeAll(m_sockfd);
+        // ------------------------------------------------
+        
         removefd(m_epollfd, m_sockfd);
         m_sockfd = -1;
         m_user_count--;
     }
 }
-
 //初始化连接,外部调用初始化套接字地址
 void http_conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMode,
                      int close_log, string user, string passwd, string sqlname)
 {
     m_sockfd = sockfd;
     m_address = addr;
+    m_is_websocket = false;
 
     addfd(m_epollfd, sockfd, true, m_TRIGMode);
     m_user_count++;
@@ -323,6 +332,17 @@ http_conn::HTTP_CODE http_conn::parse_headers(char *text)
     {
         LOG_INFO("oop!unknow header: %s", text);
     }
+    // 增加 WebSocket 拦截
+    if (strncasecmp(text, "Upgrade:", 8) == 0) {
+        if (strstr(text, "websocket")) {
+            m_is_websocket = true; // 暂时标记为准备升级
+        }
+    }
+    else if (strncasecmp(text, "Sec-WebSocket-Key:", 18) == 0) {
+        text += 18;
+        text += strspn(text, " \t");
+        m_ws_key = text;
+    }
     return NO_REQUEST;
 }
 
@@ -366,6 +386,10 @@ http_conn::HTTP_CODE http_conn::process_read()
                 return BAD_REQUEST;
             else if (ret == GET_REQUEST)
             {
+                // === 修复1：必须在这里就拦截 WebSocket 握手请求！ ===
+                if (m_is_websocket && !m_ws_key.empty()) {
+                    return process_websocket_handshake(); 
+                }
                 return do_request();
             }
             break;
@@ -373,8 +397,13 @@ http_conn::HTTP_CODE http_conn::process_read()
         case CHECK_STATE_CONTENT:
         {
             ret = parse_content(text);
-            if (ret == GET_REQUEST)
+            if (ret == GET_REQUEST) {
+                // === 修复1：必须在这里就拦截 WebSocket 握手请求！ ===
+                if (m_is_websocket && !m_ws_key.empty()) {
+                    return process_websocket_handshake(); 
+                }
                 return do_request();
+            }
             line_status = LINE_OPEN;
             break;
         }
@@ -685,8 +714,26 @@ bool http_conn::process_write(HTTP_CODE ret)
     bytes_to_send = m_write_idx;
     return true;
 }
+
 void http_conn::process()
 {
+    // 如果当前连接已经是 WebSocket 模式
+    if (m_is_websocket) {
+        // 调用 WebSocket 帧解析（解密客户端传来的订阅指令，并调用 TopicManager）
+        parse_ws_frame(); 
+        
+        // 解析完成后，清空读缓冲区，为接收下一个 WebSocket 帧做准备
+        m_read_idx = 0; 
+        m_checked_idx = 0;
+        m_start_line = 0;
+        memset(m_read_buf, '\0', READ_BUFFER_SIZE);
+        
+        // 重新将 fd 挂载到 epoll 上监听可读事件
+        modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
+        return;
+    }
+
+    // ====== 以下为原有 TinyWebServer 的 HTTP 状态机逻辑 ======
     HTTP_CODE read_ret = process_read();
     if (read_ret == NO_REQUEST)
     {
@@ -699,4 +746,80 @@ void http_conn::process()
         close_conn();
     }
     modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
+}
+
+// =====================================================================
+// ==================== WebSocket 协议相关扩展实现 =======================
+// =====================================================================
+
+http_conn::HTTP_CODE http_conn::process_websocket_handshake() 
+{
+    std::string magic = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+    std::string combined = m_ws_key + magic;
+
+    std::string sha1_raw = SHA1::hash_raw(combined);
+    std::string accept_key = Base64::encode(sha1_raw);
+
+    char response[512];
+    snprintf(response, sizeof(response),
+        "HTTP/1.1 101 Switching Protocols\r\n"
+        "Upgrade: websocket\r\n"
+        "Connection: Upgrade\r\n"
+        "Sec-WebSocket-Accept: %s\r\n\r\n", accept_key.c_str());
+    
+    send(m_sockfd, response, strlen(response), 0);
+    
+    m_is_websocket = true; 
+
+    // === 修复2：握手完成后，必须强行清空残留的 HTTP 报文！ ===
+    // 否则下一次客户端发来的 WebSocket 帧会拼接到旧数据后面导致解析失败
+    m_read_idx = 0; 
+    m_checked_idx = 0;
+    m_start_line = 0;
+    memset(m_read_buf, '\0', READ_BUFFER_SIZE);
+    // =======================================================
+    
+    return NO_REQUEST; 
+}
+
+bool http_conn::parse_ws_frame() 
+{
+    // 使用类成员变量
+    int len = m_read_idx; 
+    char* buffer = m_read_buf;
+
+    if (len < 2) return false;
+    
+    uint8_t opcode = buffer[0] & 0x0F; 
+    // 0x8 表示客户端主动要求断开 WebSocket 连接
+    if (opcode == 0x8) {
+        TopicManager::getInstance().unsubscribeAll(m_sockfd);
+        return false; 
+    }
+    
+    uint8_t payload_len = buffer[1] & 0x7F;
+    int mask_offset = 2;
+    if (payload_len == 126) mask_offset = 4;
+    else if (payload_len == 127) mask_offset = 10;
+    
+    // 提取掩码 (浏览器发来的 WebSocket 数据必须带有 Mask)
+    char mask[4];
+    memcpy(mask, buffer + mask_offset, 4);
+    int data_offset = mask_offset + 4;
+    
+    // 解密 Payload
+    std::string payload;
+    for (int i = data_offset; i < len; ++i) {
+        payload += buffer[i] ^ mask[(i - data_offset) % 4];
+    }
+    
+    LOG_INFO("Recv WS payload: %s", payload.c_str());
+
+    // 解析类似 "sub:BTC-USDT" 的订阅指令
+    if (payload.find("sub:") == 0) {
+        std::string topic = payload.substr(4);
+        TopicManager::getInstance().subscribe(m_sockfd, topic);
+        LOG_INFO("Client FD %d subscribed to topic: %s", m_sockfd, topic.c_str());
+    }
+    return true;
 }

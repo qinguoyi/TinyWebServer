@@ -15,6 +15,11 @@
 #include "./threadpool/threadpool.h"
 #include "./http/http_conn.h"
 
+// --- 新增头文件 ---
+#include <thread>
+#include <vector>
+// -----------------
+
 const int MAX_FD = 65536;           //最大文件描述符
 const int MAX_EVENT_NUMBER = 10000; //最大事件数
 const int TIMESLOT = 5;             //最小超时单位
@@ -42,6 +47,10 @@ public:
     bool dealwithsignal(bool& timeout, bool& stop_server);
     void dealwithread(int sockfd);
     void dealwithwrite(int sockfd);
+
+    // --- 新增：启动无锁推送引擎 ---
+    void start_push_engine();
+    // ----------------------------
 
 public:
     //基础
