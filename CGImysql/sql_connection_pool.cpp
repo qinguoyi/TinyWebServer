@@ -43,6 +43,15 @@ void connection_pool::init(string url, string User, string PassWord, string DBNa
 			exit(1);
 		}
 		con = mysql_real_connect(con, url.c_str(), User.c_str(), PassWord.c_str(), DBName.c_str(), Port, NULL, 0);
+		printf("----------------------------------------\n");
+		printf("DEBUG: Connecting to MySQL with:\n");
+		printf("DEBUG: URL      : [%s]\n", url.c_str());
+		printf("DEBUG: User     : [%s]\n", User.c_str());
+		printf("DEBUG: Password : [%s]\n", PassWord.c_str());
+		printf("DEBUG: DBName   : [%s]\n", DBName.c_str());
+		printf("DEBUG: Port     : [%d]\n", Port);
+		printf("----------------------------------------\n");
+		fflush(stdout);
 
 		if (con == NULL)
 		{

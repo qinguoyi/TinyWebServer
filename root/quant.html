@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ 高频量化推送看板</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d1117; /* GitHub Dark 风格背景 */
+            color: #c9d1d9;
+            text-align: center;
+            padding: 40px;
+            margin: 0;
+        }
+        h1 { color: #58a6ff; }
+        .dashboard {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .ticker-box {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .price {
+            font-size: 64px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            transition: color 0.1s; /* 颜色闪烁动画 */
+        }
+        /* 上涨绿色，下跌红色 */
+        .up { color: #3fb950; }  
+        .down { color: #f85149; }
+        .neutral { color: #c9d1d9; }
+
+        .btn {
+            background-color: #238636;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn:hover { background-color: #2ea043; }
+        .btn:disabled { background-color: #4b535d; cursor: not-allowed; }
+
+        .log-container {
+            margin-top: 20px;
+            background: #010409;
+            border: 1px solid #30363d;
+            height: 300px;
+            overflow-y: auto;
+            text-align: left;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 13px;
+            border-radius: 6px;
+        }
+        .log-line { margin: 2px 0; border-bottom: 1px dashed #21262d; padding-bottom: 2px; }
+        .time { color: #8b949e; margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>🚀 MyTinyWebServer 高频量化推送引擎</h1>
+    
+    <div class="dashboard">
+        <div style="font-size: 20px; color: #8b949e;">当前订阅标的: <b style="color: #fff;">BTC-USDT</b></div>
+        
+        <div class="ticker-box">
+            <div>
+                <div style="font-size: 14px; color: #8b949e;">最新成交价 (USD)</div>
+                <div class="price neutral" id="priceDisplay">--.----</div>
+            </div>
+            <div>
+                <div style="font-size: 14px; color: #8b949e;">24h 成交量</div>
+                <div style="font-size: 24px;" id="volumeDisplay">--</div>
+            </div>
+        </div>
+        
+        <button class="btn" id="connectBtn" onclick="connectWS()">🔗 建立 WebSocket 连接并订阅</button>
+        
+        <div style="text-align: left; margin-top: 20px; font-size: 14px; color: #8b949e;">底层数据帧接收日志 (极低延迟):</div>
+        <div class="log-container" id="logBox"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        let lastPrice = 0;
+
+        function connectWS() {
+            if (ws && ws.readyState === WebSocket.OPEN) return;
+
+            // 自动获取当前网页所在的 IP 和 端口
+            const wsUrl = `ws://${window.location.host}/`;
+            logMessage(`准备连接到后端网关: ${wsUrl}`, '#58a6ff');
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                logMessage("✅ HTTP 101 握手成功，已升级为 WebSocket 全双工通道！", '#3fb950');
+                
+                // 构造我们在 C++ 后端定义的订阅指令格式
+                const subCmd = "sub:BTC-USDT";
+                ws.send(subCmd);
+                logMessage(`📤 发送订阅指令: ${subCmd}`, '#d2a8ff');
+                
+                document.getElementById('connectBtn').innerText = "🟢 行情接收中...";
+                document.getElementById('connectBtn').disabled = true;
+            };
+
+            ws.onmessage = function(event) {
+                // 解析 C++ 推送过来的 JSON 帧
+                const data = JSON.parse(event.data);
+                
+                const priceDOM = document.getElementById('priceDisplay');
+                const volDOM = document.getElementById('volumeDisplay');
+                
+                // 判断价格涨跌，改变颜色 (这是量化看板的灵魂)
+                if (data.price > lastPrice && lastPrice !== 0) {
+                    priceDOM.className = "price up";
+                } else if (data.price < lastPrice && lastPrice !== 0) {
+                    priceDOM.className = "price down";
+                }
+                lastPrice = data.price;
+
+                // 更新大字报 UI
+                priceDOM.innerText = "$" + data.price.toFixed(2);
+                volDOM.innerText = data.volume.toFixed(2) + " BTC";
+                
+                // 打印底层日志 (为了防止浏览器卡死，这里只保留最新50条)
+                logMessage(`📥 [无锁队列推送] 标的:${data.topic} | 价格:${data.price.toFixed(4)} | 数量:${data.volume.toFixed(4)}`);
+            };
+
+            ws.onclose = function() {
+                logMessage("❌ 连接已断开，服务器停止推送", '#f85149');
+                resetUI();
+            };
+
+            ws.onerror = function(err) {
+                logMessage("⚠️ 发生网络错误", '#f85149');
+                resetUI();
+            };
+        }
+
+        function resetUI() {
+            document.getElementById('connectBtn').innerText = "🔗 重新连接";
+            document.getElementById('connectBtn').disabled = false;
+            document.getElementById('priceDisplay').className = "price neutral";
+        }
+
+        function logMessage(msg, color = '#c9d1d9') {
+            const logBox = document.getElementById('logBox');
+            const entry = document.createElement('div');
+            entry.className = 'log-line';
+            
+            // 获取带毫秒的时间戳
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}.${now.getMilliseconds().toString().padStart(3,'0')}`;
+            
+            entry.innerHTML = `<span class="time">[${timeStr}]</span> <span style="color:${color}">${msg}</span>`;
+            
+            // 将新日志插在最前面
+            logBox.prepend(entry); 
+            
+            // 限制日志条数，防止 DOM 过多导致网页卡顿
+            if (logBox.children.length > 50) {
+                logBox.removeChild(logBox.lastChild);
+            }
+        }
+    </script>
+</body>
+</html>
