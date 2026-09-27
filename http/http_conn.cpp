@@ -414,8 +414,16 @@ http_conn::HTTP_CODE http_conn::do_request()
         name[i - 5] = '\0';
 
         int j = 0;
-        for (i = i + 10; m_string[i] != '\0'; ++i, ++j)
-            password[j] = m_string[i];
+        //原代码硬编码 i + 10，但 "&passwd=" 实际只有 8 字节，
+        //导致密码前 2 位被跳过（注册 zhangsan/123456 会存成 3456）。
+        //改为按 "passwd=" 字面定位值起点，不再依赖字段名长度
+        const char *pw = strstr(m_string + i, "passwd=");
+        if (pw != NULL)
+        {
+            pw += 7;   // 跳过 "passwd=" 本身
+            while (*pw != '\0' && j < 99)
+                password[j++] = *pw++;
+        }
         password[j] = '\0';
 
         if (*(p + 1) == '3')
